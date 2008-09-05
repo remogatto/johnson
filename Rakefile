@@ -22,9 +22,13 @@ HOE = Hoe.new("johnson", Johnson::VERSION) do |p|
 
   p.clean_globs = [
     "lib/johnson/spidermonkey.#{kind}",
+    GENERATED_NODE,
     "ext/spidermonkey/Makefile",
     "ext/spidermonkey/*.{o,so,bundle,log}",
-    GENERATED_NODE,
+    "ext/v8/Makefile",
+    "ext/v8/*.{o,so,bundle,log}",
+    "vendor/v8/{.sconsign.dblite,libv8.a,obj,shell}",
+    "vendor/v8/tools/*.pyc",
     "vendor/spidermonkey/**/*.OBJ"]
 
   p.test_globs = ["test/**/*_test.rb"]
@@ -74,6 +78,16 @@ namespace :extensions do
       sh "rm -f Makefile"
       sh "rm -f *.{o,so,bundle,log}"
     end
+    Dir.chdir("ext/v8") do
+      sh "rm -f Makefile"
+      sh "rm -f *.{o,so,bundle,log}"
+    end
+  end
+end
+
+file "vendor/v8/libv8.a" => "vendor/v8/.svn/entries" do
+  Dir.chdir("vendor/v8") do
+    sh "scons mode=release snapshot=on library=static sample=shell"
   end
 end
 
@@ -111,11 +125,26 @@ file "ext/spidermonkey/spidermonkey.#{kind}" =>
   sh "touch #{t.name}" if old_time && File.mtime(t.name) <= old_time
 end
 
+file "ext/v8/rubyv8.#{kind}" =>
+  ["ext/v8/Makefile"] + FileList["ext/v8/*.{cc,h}"].to_a do |t|
+
+  old_time = File.mtime(t.name) rescue nil
+  Dir.chdir("ext/v8") { sh "make" }
+
+  # If make chose not to rebuild the file, we'll touch it, so we don't
+  # bother to call make again next time.
+  sh "touch #{t.name}" if old_time && File.mtime(t.name) <= old_time
+end
+
 # for testing, we toss the SpiderMonkey extension in lib/johnson
 file "lib/johnson/spidermonkey.#{kind}" =>
   "ext/spidermonkey/spidermonkey.#{kind}" do |t|
 
   cp t.prerequisites.first, t.name
+end
+
+file "ext/v8/Makefile" => ["vendor/v8/libv8.a", "ext/v8/extconf.rb"] do
+  Dir.chdir("ext/v8") { sh "ruby extconf.rb" }
 end
 
 file "ext/spidermonkey/Makefile" =>

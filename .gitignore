@@ -8,12 +8,24 @@
 /ext/spidermonkey/*.o
 /ext/spidermonkey/*.so
 
+/ext/v8/*.bundle
+/ext/v8/Makefile
+/ext/v8/*.log
+/ext/v8/*.o
+/ext/v8/*.so
+
 /lib/johnson/*.bundle
 /lib/johnson/*.so
 
 /vendor/spidermonkey/*.OBJ
-
 /vendor/spidermonkey/editline/*.OBJ
+
+/vendor/v8/.sconsign.dblite
+/vendor/v8/libv8.*
+/vendor/v8/obj
+/vendor/v8/shell*
+/vendor/v8/tools/*.pyc
+
 .*.swp
 tags
 .DS_Store
