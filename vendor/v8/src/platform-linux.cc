@@ -256,7 +256,7 @@ OS::MemoryMappedFile* OS::MemoryMappedFile::create(const char* name, int size,
     void* initial) {
   FILE* file = fopen(name, "w+");
   if (file == NULL) return NULL;
-  fwrite(initial, size, 1, file);
+  if (size > 0 && fwrite(initial, size, 1, file) < 1) return NULL;
   void* memory =
       mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fileno(file), 0);
   return new PosixMemoryMappedFile(file, memory, size);
@@ -285,11 +285,11 @@ void OS::LogSharedLibraryAddresses() {
     addr_buffer[0] = '0';
     addr_buffer[1] = 'x';
     addr_buffer[10] = 0;
-    read(fd, addr_buffer + 2, 8);
+    if (read(fd, addr_buffer + 2, 8) < 0) return;
     unsigned start = StringToLongLong(addr_buffer);
-    read(fd, addr_buffer + 2, 1);
+    if (read(fd, addr_buffer + 2, 1) < 0) return;
     if (addr_buffer[2] != '-') return;
-    read(fd, addr_buffer + 2, 8);
+    if (read(fd, addr_buffer + 2, 8) < 0) return;
     unsigned end = StringToLongLong(addr_buffer);
     char buffer[MAP_LENGTH];
     int bytes_read = -1;
@@ -301,7 +301,8 @@ void OS::LogSharedLibraryAddresses() {
       // A read error means that -1 is returned.
       if (result < 1) return;
     } while (buffer[bytes_read] != '\n');
-    buffer[bytes_read] = 0;
+    if (bytes_read <= MAP_LENGTH)
+      buffer[bytes_read] = 0;
     // There are 56 chars to ignore at this point in the line.
     if (bytes_read < 56) continue;
     // Ignore mappings that are not executable.
