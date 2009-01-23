@@ -2,10 +2,15 @@ module Johnson
   class Runtime
     attr_reader :delegate
     
-    def initialize(delegate=Johnson::SpiderMonkey::Runtime)
-      @delegate = delegate.is_a?(Class) ? delegate.new : delegate
-      evaluate(Johnson::PRELUDE, "Johnson::PRELUDE", 1)
-      global.Johnson.runtime = self
+    def initialize options = {}
+      @delegate = options[:delegate] || Johnson::SpiderMonkey::Runtime
+      @delegate = @delegate.new if @delegate.is_a?(Class)
+
+      unless options[:sandbox]
+        self["Ruby"] = Object
+        evaluate(Johnson::PRELUDE, "Johnson::PRELUDE", 1)
+        global.Johnson.runtime = self
+      end
     end
     
     def [](key)

@@ -4,7 +4,7 @@ module Johnson
   module SpiderMonkey
     class RubyLandProxyTest < Johnson::TestCase
       def setup
-        @runtime = Johnson::Runtime.new(Johnson::SpiderMonkey::Runtime)
+        @runtime = Johnson::Runtime.new(:delegate => Johnson::SpiderMonkey::Runtime)
       end
       
       def test_constructing_a_proxy_directly_asplodes

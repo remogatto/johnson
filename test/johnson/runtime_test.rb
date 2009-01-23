@@ -53,5 +53,10 @@ module Johnson
         GC.start
       }
     end
+
+    def test_sandbox
+      rt = Johnson::Runtime.new :sandbox => true
+      assert_nil rt.evaluate("Ruby")
+    end
   end
 end

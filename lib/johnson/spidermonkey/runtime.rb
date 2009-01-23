@@ -8,7 +8,6 @@ module Johnson #:nodoc:
         @compiled_scripts = {}
         @gcthings = {}
         initialize_native(options)
-        self["Ruby"] = Object
       end
       
       # called from js_land_proxy.c:make_js_land_proxy
