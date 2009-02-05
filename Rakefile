@@ -7,6 +7,12 @@ Rake::ExtensionTask.new do |ext|
   ext.source_pattern = "**/*.{cc,h}"
 end
 
+Rake::ExtensionTask.new do |ext|
+  ext.name = "spidermonkey"
+  ext.lib_dir = "lib/johnson"
+  ext.source_pattern = "**/*.{c,h}"
+end
+
 Rake::TestTask.new do |test|
   test.libs << "test"
   test.ruby_opts << "-rhelper"

@@ -4,13 +4,14 @@ require "rbconfig"
 
 if Config::CONFIG["arch"] =~ /universal-darwin/
   case `uname -smr`.chomp
-  when "i386" then ENV["ARCHFLAGS"] = "-arch -386"
+  when "i386" then ENV["ARCHFLAGS"] = "-arch i386"
   when "ppc" then ENV["ARCHFLAGS"] = "-arch ppc"
   end
 end
 
 require "mkmf"
 
+$CFLAGS << " -Wfatal-errors"
 $CFLAGS << " -Werror -Wall -Wextra -Wunused -Wfloat-equal -Wshadow -Wcast-qual"
 $CFLAGS << " -Wwrite-strings -Wconversion -Wmissing-noreturn -Winline"
 $LIBS   << " -lstdc++ -lc -framework JavaScriptCore"
