@@ -1,4 +1,5 @@
 require "rake/extensiontask"
+require "rake/lathertask"
 require "rake/testtask"
 
 Rake::ExtensionTask.new do |ext|
@@ -13,12 +14,16 @@ Rake::ExtensionTask.new do |ext|
   ext.source_pattern = "**/*.{c,h}"
 end
 
-Rake::TestTask.new do |test|
-  test.libs << "test"
-  test.ruby_opts << "-rhelper"
-  test.test_files = FileList["test/**/*_test.rb"]
-  test.verbose = false
+test = Rake::TestTask.new do |t|
+  t.libs      << "test"
+  t.ruby_opts << "-rhelper"
+  t.pattern    = "test/**/*_test.rb"
 end
 
-Rake::Task["test"].prerequisites << :compile
+Rake::Task[:test].prerequisites << :compile
 task :default => :test
+
+Rake::LatherTask.new :target => test do |lather|
+  lather.globs << "lib/**/*.rb"
+  lather.globs << "ext/**/*.{c,cc,h}"
+end
