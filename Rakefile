@@ -3,12 +3,6 @@ require "rake/lathertask"
 require "rake/testtask"
 
 Rake::ExtensionTask.new do |ext|
-  ext.name = "javascriptcore"
-  ext.lib_dir = "lib/johnson"
-  ext.source_pattern = "**/*.{cc,h}"
-end
-
-Rake::ExtensionTask.new do |ext|
   ext.name = "spidermonkey"
   ext.lib_dir = "lib/johnson"
   ext.source_pattern = "**/*.{c,h}"
