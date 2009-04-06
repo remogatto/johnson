@@ -40,3 +40,10 @@ Dir["lib/tasks/*.rake"].each { |f| load f }
 # default task and make the extensions compile instead.
 
 Rake::Task[:default].prerequisites.replace %w(compile) if ENV["RUBYARCHDIR"]
+
+begin
+  require 'ffi-swig-generator'
+  FFI::Generator::Task.new :input_fn => 'vendor/spidermonkey/*.i', :output_dir => 'generated/'
+rescue LoadError
+  nil
+end
