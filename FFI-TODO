@@ -1,5 +1,10 @@
 [x] Get implementation version
 
+[ ] Conversions
+  [ ] Regexp
+  [ ] Thread
+  [ ] Struct
+
 [ ] Runtime
   [ ] Compile and evaluate
 
@@ -10,6 +15,8 @@
 
 [ ] Debugger
 
-[ ] Crash when run autotest
+[ ] Roots
+
+[x] Fix crash when run autotest
 
 

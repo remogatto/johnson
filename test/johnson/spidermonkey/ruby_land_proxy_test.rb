@@ -7,9 +7,9 @@ module Johnson
         @runtime = Johnson::Runtime.new(Johnson::SpiderMonkey::Runtime)
       end
       
-#       def test_constructing_a_proxy_directly_asplodes
-#         assert_raise(Johnson::Error) { Johnson::SpiderMonkey::RubyLandProxy.new }
-#       end
+      # def test_constructing_a_proxy_directly_asplodes
+      #   assert_raise(Johnson::Error) { Johnson::SpiderMonkey::RubyLandProxy.new }
+      # end
       
       def test_objects_get_wrapped_as_proxies
         assert_kind_of(Johnson::SpiderMonkey::RubyLandProxy, @runtime.evaluate("x = {}"))

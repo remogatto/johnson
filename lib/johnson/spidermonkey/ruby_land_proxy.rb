@@ -10,9 +10,12 @@ module Johnson
       # private :initialize
       
       # FIXME: need to revisit array vs non-array proxy, to_a/to_ary semantics, etc.
+
       alias_method :to_ary, :to_a
       attr_reader :js
+
       class << self
+
         def make_ruby_land_proxy(runtime, js)
           if @js_proxies && @js_proxies.has_key?(js)
             return @js_proxies[js]
@@ -20,11 +23,13 @@ module Johnson
             (@js_proxies ||= { }).store(js, self.new(runtime, js))
           end
         end
+
       end
-      def initialize(runtime, js)
+
+      def initialize(runtime, js_value)
         @runtime = runtime
         @context = runtime.context
-        @js = js
+        @js = js_value
         @js_object = js_object
       end      
 
@@ -55,9 +60,11 @@ module Johnson
       def []=(name, value)
         set(name, value)
       end
+
       def size
         length
       end
+
       def length
         length = FFI::MemoryPointer.new(:uint)
         if SpiderMonkey.JS_IsArrayObject(@context, @js_object) == JS_TRUE
@@ -70,6 +77,7 @@ module Johnson
           return length
         end
       end
+
       def each
         length = FFI::MemoryPointer.new(:uint)
         if SpiderMonkey.JS_IsArrayObject(@context, @js_object) == JS_TRUE
@@ -102,6 +110,7 @@ module Johnson
           end
         end
       end
+
       def method_missing(sym, *args, &block)
         args << block if block_given?
         
@@ -123,6 +132,7 @@ module Johnson
         # okay, must really be a function
         call_function_property(name, *args)
       end
+
       def respond_to?(sym)
         name = sym.to_s
         return true if sym.to_s.match(/=$/) # FIXME: this will also match 'foo=='
@@ -130,9 +140,11 @@ module Johnson
         SpiderMonkey.JS_HasProperty(@context, @js_object, name, found)
         found.read_int == JS_TRUE ? true : super # FIXME: not sure why it works...
       end
+
       def function?
         SpiderMonkey.JS_TypeOfValue(@context, @js) == JSTYPE_FUNCTION ? true : false
       end
+
       def function_property?(name)
         js_rvalue = FFI::MemoryPointer.new(:pointer)
         SpiderMonkey.JS_GetProperty(@context, @js_object, name, js_rvalue)
@@ -165,6 +177,7 @@ module Johnson
         end
         value
       end
+
       def native_call(this, *args)
 
         unless function?
@@ -190,14 +203,17 @@ module Johnson
                                                js_result)
         @runtime.convert_to_ruby(js_result.read_long)
       end
+
       def call_function_property(name, *args)
         get(name).call(*args)
       end
+
       def js_object
         js_object = FFI::MemoryPointer.new(:pointer)
         SpiderMonkey.JS_ValueToObject(@runtime.context, @js, js_object)
         js_object.read_pointer
       end
+
     end
   end
 end
