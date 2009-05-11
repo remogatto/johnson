@@ -2,7 +2,7 @@ module Johnson
   module SpiderMonkey
     module JSLandProxy #:nodoc:
       
-      def make_js_land_class_proxy_class
+      def js_land_class_proxy_class
         @js_land_class_proxy_class = JSClass.allocate
         @js_land_class_proxy_class.name = 'JSLandClassProxy'
         @js_land_class_proxy_class.addProperty = SpiderMonkey.method(:JS_PropertyStub).to_proc
@@ -17,7 +17,7 @@ module Johnson
         @js_land_class_proxy_class
       end
 
-      def make_js_land_proxy_class
+      def js_land_proxy_class
         @js_land_proxy_class = JSClassWithNewResolve.allocate
         @js_land_proxy_class.name = 'JSLandProxy'
         @js_land_proxy_class.addProperty = SpiderMonkey.method(:JS_PropertyStub).to_proc
@@ -34,7 +34,7 @@ module Johnson
         @js_land_proxy_class
       end
 
-      def make_js_land_callable_proxy_class
+      def js_land_callable_proxy_class
         @js_land_class_proxy_class = JSClass.allocate
         @js_land_class_proxy_class.name = 'JSLandCallableProxy'
         @js_land_class_proxy_class.addProperty = SpiderMonkey.method(:JS_PropertyStub).to_proc
@@ -50,18 +50,30 @@ module Johnson
         @js_land_class_proxy_class
       end
       
+      def add_js_proxy(js_value, ruby)
+        (@js_proxies ||= { }).store(js_value, ruby)
+      end
+
+      def add_ruby_proxy(ruby, js_value)
+        (@ruby_proxies ||= { }).store(ruby.object_id, js_value)
+      end
+
+      def has_proxy?(ruby)
+        @ruby_proxies && @ruby_proxies.include?(ruby.object_id)
+      end
+
       def make_js_land_proxy(ruby)
 
-        if @ruby_proxies && @ruby_proxies.include?(ruby.object_id)
+        if has_proxy?(ruby)
           @ruby_proxies[ruby.object_id]
         else
-          klass = make_js_land_proxy_class
-
-          if ruby.kind_of?(Class)
-            klass = make_js_land_class_proxy_class
-          elsif ruby.respond_to?(:call)
-            klass = make_js_land_callable_proxy_class
-          end
+          klass = if ruby.kind_of?(Class)
+                    js_land_class_proxy_class
+                  elsif ruby.respond_to?(:call)
+                    js_land_callable_proxy_class
+                  else
+                    js_land_proxy_class            
+                  end
 
           js_object = SpiderMonkey.JS_NewObject(context, klass, nil, nil)
           js_value = SpiderMonkey.JS_ObjectToValue(context, js_object)
@@ -69,9 +81,9 @@ module Johnson
           SpiderMonkey.JS_DefineFunction(context, js_object, "__noSuchMethod__", method(:js_method_missing).to_proc, 2, 0)
           SpiderMonkey.JS_DefineFunction(context, js_object, "toArray", method(:to_array).to_proc, 0, 0)
           SpiderMonkey.JS_DefineFunction(context, js_object, "toString", method(:to_string).to_proc, 0, 0)
-
-          (@js_proxies ||= { }).store(js_value, ruby)
-          (@ruby_proxies ||= { }).store(ruby.object_id, js_value)
+          
+          add_js_proxy(js_value, ruby)
+          add_ruby_proxy(ruby, js_value)
 
           js_value            
         end
@@ -182,7 +194,7 @@ module Johnson
         if SpiderMonkey.JSVAL_IS_INT(id)
           idx = name.to_i
           if ruby.respond_to?(:[])
-            retval.put_long(0, convert_to_js(ruby[idx]).read_long)
+            retval.write_long(convert_to_js(ruby[idx]).read_long)
             return JS_TRUE
           end
         end
@@ -191,25 +203,25 @@ module Johnson
           evaluate_js_property_expression("Johnson.Generator.create", retval)
           
         elsif autovivified?(ruby, name)
-          retval.put_long(0, convert_to_js(autovivified(ruby, name)).read_long)
+          retval.write_long(convert_to_js(autovivified(ruby, name)).read_long)
 
           # Are we asking for a constant?
         elsif ruby.kind_of?(Class) && ruby.constants.include?(name)
-          retval.put_long(0, convert_to_js(ruby.const_get(name)).read_long)
+          retval.write_long(convert_to_js(ruby.const_get(name)).read_long)
 
           # Are we asking for a global?
         elsif name.match(/^\$/) && global_variables.include?(name)
-          retval.put_long(0, convert_to_js(eval(name)).read_long)
+          retval.write_long(convert_to_js(eval(name)).read_long)
 
         elsif attribute?(ruby, name)
-          retval.put_long(0, convert_to_js(ruby.send(name.to_sym)).read_long)
+          retval.write_long(convert_to_js(ruby.send(name.to_sym)).read_long)
 
         elsif ruby.respond_to?(name.to_sym)
-          retval.put_long(0, convert_to_js(ruby.method(name.to_sym)).read_long)
+          retval.write_long(convert_to_js(ruby.method(name.to_sym)).read_long)
 
         elsif ruby.respond_to?(:key?) and ruby.respond_to?(:[])
           if ruby.key?(name)
-            retval.put_long(0, convert_to_js(ruby[name]).read_long)
+            retval.write_long(convert_to_js(ruby[name]).read_long)
           end
         end
 
@@ -240,8 +252,7 @@ module Johnson
       def call(js_context, obj, argc, argv, retval)
         callee = @js_proxies[SpiderMonkey.JS_ArgvCallee(argv)]
         # FIXME: We must implement read_array_of_long in ruby-ffi!
-        args = argv.read_array_of_int(argc)
-        args.collect! do |js_value|
+        args = argv.read_array_of_int(argc).collect do |js_value|
           convert_to_ruby(js_value)
         end
         retval.write_long(convert_to_js(send_with_possible_block(callee, :call, args)).read_long)
@@ -254,8 +265,7 @@ module Johnson
 
       def construct(js_context, obj, argc, argv, retval)
         callee = @js_proxies[SpiderMonkey.JS_ArgvCallee(argv)]
-        args = argv.read_array_of_int(argc)
-        args.collect! do |js_value|
+        args = argv.read_array_of_int(argc).collect do |js_value|
           convert_to_ruby(js_value)
         end
         retval.write_long(convert_to_js(send_with_possible_block(callee, :new, args)).read_long)          
@@ -324,6 +334,6 @@ module Johnson
           target.send(:"#{attribute}=", value)
         end
       
-      end
     end
+  end
 end
