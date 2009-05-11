@@ -1,5 +1,15 @@
+[x] Get implementation version
+
+[ ] Runtime
+  [ ] Compile and evaluate
+
+[ ] Prelude
+  [ ] strings_had_a_to_symbol_method
+
 [ ] Parser
 
 [ ] Debugger
+
+[ ] Crash when run autotest
 
 

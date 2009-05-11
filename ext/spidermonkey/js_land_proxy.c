@@ -274,7 +274,7 @@ static JSBool get(JSContext* js_context, JSObject* obj, jsval id, jsval* retval)
   // otherwise, it's a method being accessed as a property, which means
   // we need to return a lambda
   
-  // FIXME: this should really wrap the Method  for 'name' in a JS class
+  // FIXME: this should really wrap the Method for 'name' in a JS class
   // rather than generating a wrapper Proc
   
   else if (method_p(self, name))

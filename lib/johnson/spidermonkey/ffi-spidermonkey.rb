@@ -187,6 +187,10 @@ module Johnson
 
     end
 
+    # Function
+
+    attach_function :JS_ArgvCallee, [ :pointer ], :long
+
     # Array
     
     attach_function :JS_IsArrayObject, [ :pointer, :pointer ], :int
@@ -209,6 +213,10 @@ module Johnson
     attach_function :JS_ResolveStub, [ :pointer, :pointer, :long ], :int
     attach_function :JS_ConvertStub, [ :pointer, :pointer, :int, :pointer ], :int
     attach_function :JS_FinalizeStub, [ :pointer, :pointer ], :void
+
+    # Version
+
+    attach_function :JS_GetImplementationVersion, [  ], :string
 
     class JSClass < FFI::ManagedStruct
       layout(
@@ -546,5 +554,11 @@ module Johnson
     JSCLASS_RESERVED_SLOTS_MASK = JS_BITMASK(JSCLASS_RESERVED_SLOTS_WIDTH)
     JSCLASS_GLOBAL_FLAGS = (JSCLASS_IS_GLOBAL | JSCLASS_HAS_RESERVED_SLOTS(33))
 
+  end
+end
+
+module Johnson
+  module SpiderMonkey
+    VERSION = SpiderMonkey.JS_GetImplementationVersion
   end
 end

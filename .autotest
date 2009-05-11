@@ -6,9 +6,10 @@ Autotest.add_hook(:initialize) do |at|
   at.add_exception("test/johnson/conversions/regexp")
   at.add_exception("test/johnson/conversions/struct")
   at.add_exception("test/johnson/conversions/thread")
-  at.add_exception("test/johnson/version")
   at.add_exception("test/johnson/nodes")
   at.add_exception("test/johnson/visitors")
+
+  at.add_exception("test/johnson/prelude")
 
   at.add_mapping(/^lib\/.*\.rb$/) do |file, _|
     at.files_matching(/^test\/.*_test\.rb$/)

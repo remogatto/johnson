@@ -361,6 +361,9 @@ extern JS_PUBLIC_API(jsval)
 JS_ObjectToValue(JSContext *cx, JSObject *objp);
 
 extern JS_PUBLIC_API(jsval)
+JS_ArgvCallee(jsval *argv);
+
+extern JS_PUBLIC_API(jsval)
 JS_ObjectToString(JSContext *cx, JSString *str);
 
 extern JS_PUBLIC_API(JSFunction *)

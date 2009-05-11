@@ -45,7 +45,7 @@ module Johnson
       # end
 
       def to_s
-        Conversions::convert_js_string_to_ruby(@runtime, SpiderMonkey.JS_ValueToString(@context, @js_object))
+        @runtime.convert_js_string_to_ruby(SpiderMonkey.JS_ValueToString(@context, @js_object))
       end
 
       def [](name)
@@ -77,7 +77,7 @@ module Johnson
           (length.read_int).times do |i|
             element = FFI::MemoryPointer.new(:pointer)
             SpiderMonkey.JS_GetElement(@runtime.context, @js_object, i, element)
-            yield Conversions::convert_to_ruby(@runtime, element.read_int)
+            yield @runtime.convert_to_ruby(element.read_long)
           end
         else
           js_value = FFI::MemoryPointer.new(:pointer)
@@ -96,8 +96,8 @@ module Johnson
                                          SpiderMonkey.JSVAL_TO_INT(js_key.read_int), 
                                          js_value)
             end
-            key = Conversions::convert_to_ruby(@runtime, js_key.read_int)
-            value = Conversions::convert_to_ruby(@runtime, js_value.read_int);
+            key = @runtime.convert_to_ruby(js_key.read_long)
+            value = @runtime.convert_to_ruby(js_value.read_long)
             yield key, value
           end
         end
@@ -139,7 +139,9 @@ module Johnson
         type = SpiderMonkey.JS_TypeOfValue(@context, js_rvalue.read_long);
         type == SpiderMonkey::JSTYPE_FUNCTION ? true : false
       end
+
       private
+
       def get(name)
         js_rvalue = FFI::MemoryPointer.new(:pointer)
         if name.kind_of?(Fixnum)
@@ -149,10 +151,11 @@ module Johnson
         else
           # FIXME: throw an exception?
         end
-        Conversions::convert_to_ruby(@runtime, js_rvalue.read_long)
+        @runtime.convert_to_ruby(js_rvalue.read_long)
       end
+
       def set(name, value)
-        js_value = Conversions::convert_to_js(@runtime, value)
+        js_value = @runtime.convert_to_js(value)
         if name.kind_of?(Fixnum)
           SpiderMonkey.JS_SetElement(@context, @js_object, name, js_value)
         elsif name.kind_of?(String)
@@ -172,10 +175,10 @@ module Johnson
         js_args = FFI::MemoryPointer.new(:int, args.size)
 
         if args.size > 0
-          js_args.put_array_of_int(0, args.map { |arg| Conversions::convert_to_js(@runtime, arg).read_int })
+          js_args.put_array_of_int(0, args.map { |arg| @runtime.convert_to_js(arg).read_long })
         end
 
-        js_value = Conversions::convert_to_js(@runtime, this)
+        js_value = @runtime.convert_to_js(this)
         js_object = FFI::MemoryPointer.new(:pointer)
         SpiderMonkey.JS_ValueToObject(@runtime.context, js_value.read_long, js_object)
 
@@ -185,7 +188,7 @@ module Johnson
                                                args.size, 
                                                js_args,
                                                js_result)
-        Conversions::convert_to_ruby(@runtime, js_result.read_long)
+        @runtime.convert_to_ruby(js_result.read_long)
       end
       def call_function_property(name, *args)
         get(name).call(*args)

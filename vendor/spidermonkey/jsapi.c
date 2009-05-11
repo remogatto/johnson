@@ -536,6 +536,12 @@ JS_StringToValue(JSContext *cx, JSString *str)
     return JSVAL_SETTAG((jsval)(str), JSVAL_STRING);
 }
 
+JS_PUBLIC_API(jsval)
+JS_ArgvCallee(jsval *argv)
+{
+    return argv[-2];
+}
+
 JS_PUBLIC_API(JSFunction *)
 JS_ValueToFunction(JSContext *cx, jsval v)
 {
