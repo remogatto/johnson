@@ -43,7 +43,10 @@ Rake::Task[:default].prerequisites.replace %w(compile) if ENV["RUBYARCHDIR"]
 
 begin
   require 'ffi-swig-generator'
-  FFI::Generator::Task.new :input_fn => 'vendor/spidermonkey/*.i', :output_dir => 'generated/'
+  FFI::Generator::Task.new do |task|
+    task.input_fn = 'interfaces/*.i'
+    task.output_dir = 'generated/'
+  end
 rescue LoadError
   nil
 end

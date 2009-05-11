@@ -16,13 +16,17 @@ module Johnson
       delegate[key.to_s] = value
     end
     
-    def evaluate(expression, filename=nil, linenum=nil)
+    def evaluate(expression, filename = nil, linenum = nil)
       return nil if expression.nil?
       delegate.evaluate(expression, filename, linenum)
     end
-    
+
+    ###
+    # NOTE: delegation below differs from the original since
+    # SpiderMonkey::Runtime#global returns a FFI::MemoryPointer and
+    # not a global ruby proxy.
     def global
-      delegate.global
+      delegate.global_proxy
     end
     
     def load(*files)
@@ -43,21 +47,21 @@ module Johnson
       delegate.compile(script, filename, linenum)
     end
 
-    ###
-    # Yield to +block+ in +filename+ at +linenum+
-    def break(filename, linenum, &block)
-      delegate.break(filename, linenum, &block)
-    end
+#     ###
+#     # Yield to +block+ in +filename+ at +linenum+
+#     def break(filename, linenum, &block)
+#       delegate.break(filename, linenum, &block)
+#     end
 
-    def evaluate_compiled_script(script)
-      delegate.evaluate_compiled(script)
-    end
+#     def evaluate_compiled_script(script)
+#       delegate.evaluate_compiled(script)
+#     end
 
-    private
-    # Called by SpiderMonkey's garbage collector to determine whether or
-    # not it should GC
-    def should_sm_gc?
-      false
-    end
+#     private
+#     # Called by SpiderMonkey's garbage collector to determine whether or
+#     # not it should GC
+#     def should_sm_gc?
+#       false
+#     end
   end
 end

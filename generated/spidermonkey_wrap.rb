@@ -8,6 +8,238 @@ module SpiderMonkey
   JS_BYTES_PER_SHORT = 2
   JS_BYTES_PER_INT = 4
   JS_BYTES_PER_LONG = 8
+  DEBUG = 1
+  JSOP_NOP = 0
+  JSOP_PUSH = 1
+  JSOP_FORARG = 10
+  JSOP_VARINC = 100
+  JSOP_ARGDEC = 101
+  JSOP_VARDEC = 102
+  JSOP_FORIN = 103
+  JSOP_FORNAME = 104
+  JSOP_FORPROP = 105
+  JSOP_FORELEM = 106
+  JSOP_POPN = 107
+  JSOP_BINDNAME = 108
+  JSOP_SETNAME = 109
+  JSOP_FORVAR = 11
+  JSOP_THROW = 110
+  JSOP_IN = 111
+  JSOP_INSTANCEOF = 112
+  JSOP_DEBUGGER = 113
+  JSOP_GOSUB = 114
+  JSOP_RETSUB = 115
+  JSOP_EXCEPTION = 116
+  JSOP_LINENO = 117
+  JSOP_CONDSWITCH = 118
+  JSOP_CASE = 119
+  JSOP_DUP = 12
+  JSOP_DEFAULT = 120
+  JSOP_EVAL = 121
+  JSOP_ENUMELEM = 122
+  JSOP_GETTER = 123
+  JSOP_SETTER = 124
+  JSOP_DEFFUN = 125
+  JSOP_DEFCONST = 126
+  JSOP_DEFVAR = 127
+  JSOP_ANONFUNOBJ = 128
+  JSOP_NAMEDFUNOBJ = 129
+  JSOP_DUP2 = 13
+  JSOP_SETLOCALPOP = 130
+  JSOP_GROUP = 131
+  JSOP_SETCALL = 132
+  JSOP_TRY = 133
+  JSOP_FINALLY = 134
+  JSOP_SWAP = 135
+  JSOP_ARGSUB = 136
+  JSOP_ARGCNT = 137
+  JSOP_DEFLOCALFUN = 138
+  JSOP_GOTOX = 139
+  JSOP_SETCONST = 14
+  JSOP_IFEQX = 140
+  JSOP_IFNEX = 141
+  JSOP_ORX = 142
+  JSOP_ANDX = 143
+  JSOP_GOSUBX = 144
+  JSOP_CASEX = 145
+  JSOP_DEFAULTX = 146
+  JSOP_TABLESWITCHX = 147
+  JSOP_LOOKUPSWITCHX = 148
+  JSOP_BACKPATCH = 149
+  JSOP_BITOR = 15
+  JSOP_BACKPATCH_POP = 150
+  JSOP_THROWING = 151
+  JSOP_SETRVAL = 152
+  JSOP_RETRVAL = 153
+  JSOP_GETGVAR = 154
+  JSOP_SETGVAR = 155
+  JSOP_INCGVAR = 156
+  JSOP_DECGVAR = 157
+  JSOP_GVARINC = 158
+  JSOP_GVARDEC = 159
+  JSOP_BITXOR = 16
+  JSOP_REGEXP = 160
+  JSOP_DEFXMLNS = 161
+  JSOP_ANYNAME = 162
+  JSOP_QNAMEPART = 163
+  JSOP_QNAMECONST = 164
+  JSOP_QNAME = 165
+  JSOP_TOATTRNAME = 166
+  JSOP_TOATTRVAL = 167
+  JSOP_ADDATTRNAME = 168
+  JSOP_ADDATTRVAL = 169
+  JSOP_BITAND = 17
+  JSOP_BINDXMLNAME = 170
+  JSOP_SETXMLNAME = 171
+  JSOP_XMLNAME = 172
+  JSOP_DESCENDANTS = 173
+  JSOP_FILTER = 174
+  JSOP_ENDFILTER = 175
+  JSOP_TOXML = 176
+  JSOP_TOXMLLIST = 177
+  JSOP_XMLTAGEXPR = 178
+  JSOP_XMLELTEXPR = 179
+  JSOP_EQ = 18
+  JSOP_XMLOBJECT = 180
+  JSOP_XMLCDATA = 181
+  JSOP_XMLCOMMENT = 182
+  JSOP_XMLPI = 183
+  JSOP_CALLPROP = 184
+  JSOP_GETFUNNS = 185
+  JSOP_FOREACH = 186
+  JSOP_DELDESC = 187
+  JSOP_UINT24 = 188
+  JSOP_INDEXBASE = 189
+  JSOP_NE = 19
+  JSOP_RESETBASE = 190
+  JSOP_RESETBASE0 = 191
+  JSOP_STARTXML = 192
+  JSOP_STARTXMLEXPR = 193
+  JSOP_CALLELEM = 194
+  JSOP_STOP = 195
+  JSOP_GETXPROP = 196
+  JSOP_CALLXMLNAME = 197
+  JSOP_TYPEOFEXPR = 198
+  JSOP_ENTERBLOCK = 199
+  JSOP_POPV = 2
+  JSOP_LT = 20
+  JSOP_LEAVEBLOCK = 200
+  JSOP_GETLOCAL = 201
+  JSOP_SETLOCAL = 202
+  JSOP_INCLOCAL = 203
+  JSOP_DECLOCAL = 204
+  JSOP_LOCALINC = 205
+  JSOP_LOCALDEC = 206
+  JSOP_FORLOCAL = 207
+  JSOP_FORCONST = 208
+  JSOP_ENDITER = 209
+  JSOP_LE = 21
+  JSOP_GENERATOR = 210
+  JSOP_YIELD = 211
+  JSOP_ARRAYPUSH = 212
+  JSOP_FOREACHKEYVAL = 213
+  JSOP_ENUMCONSTELEM = 214
+  JSOP_LEAVEBLOCKEXPR = 215
+  JSOP_GETTHISPROP = 216
+  JSOP_GETARGPROP = 217
+  JSOP_GETVARPROP = 218
+  JSOP_GETLOCALPROP = 219
+  JSOP_GT = 22
+  JSOP_INDEXBASE1 = 220
+  JSOP_INDEXBASE2 = 221
+  JSOP_INDEXBASE3 = 222
+  JSOP_CALLGVAR = 223
+  JSOP_CALLVAR = 224
+  JSOP_CALLARG = 225
+  JSOP_CALLLOCAL = 226
+  JSOP_INT8 = 227
+  JSOP_INT32 = 228
+  JSOP_LENGTH = 229
+  JSOP_GE = 23
+  JSOP_LSH = 24
+  JSOP_RSH = 25
+  JSOP_URSH = 26
+  JSOP_ADD = 27
+  JSOP_SUB = 28
+  JSOP_MUL = 29
+  JSOP_ENTERWITH = 3
+  JSOP_DIV = 30
+  JSOP_MOD = 31
+  JSOP_NOT = 32
+  JSOP_BITNOT = 33
+  JSOP_NEG = 34
+  JSOP_NEW = 35
+  JSOP_DELNAME = 36
+  JSOP_DELPROP = 37
+  JSOP_DELELEM = 38
+  JSOP_TYPEOF = 39
+  JSOP_LEAVEWITH = 4
+  JSOP_VOID = 40
+  JSOP_INCNAME = 41
+  JSOP_INCPROP = 42
+  JSOP_INCELEM = 43
+  JSOP_DECNAME = 44
+  JSOP_DECPROP = 45
+  JSOP_DECELEM = 46
+  JSOP_NAMEINC = 47
+  JSOP_PROPINC = 48
+  JSOP_ELEMINC = 49
+  JSOP_RETURN = 5
+  JSOP_NAMEDEC = 50
+  JSOP_PROPDEC = 51
+  JSOP_ELEMDEC = 52
+  JSOP_GETPROP = 53
+  JSOP_SETPROP = 54
+  JSOP_GETELEM = 55
+  JSOP_SETELEM = 56
+  JSOP_CALLNAME = 57
+  JSOP_CALL = 58
+  JSOP_NAME = 59
+  JSOP_GOTO = 6
+  JSOP_DOUBLE = 60
+  JSOP_STRING = 61
+  JSOP_ZERO = 62
+  JSOP_ONE = 63
+  JSOP_NULL = 64
+  JSOP_THIS = 65
+  JSOP_FALSE = 66
+  JSOP_TRUE = 67
+  JSOP_OR = 68
+  JSOP_AND = 69
+  JSOP_IFEQ = 7
+  JSOP_TABLESWITCH = 70
+  JSOP_LOOKUPSWITCH = 71
+  JSOP_STRICTEQ = 72
+  JSOP_STRICTNE = 73
+  JSOP_CLOSURE = 74
+  JSOP_EXPORTALL = 75
+  JSOP_EXPORTNAME = 76
+  JSOP_IMPORTALL = 77
+  JSOP_IMPORTPROP = 78
+  JSOP_IMPORTELEM = 79
+  JSOP_IFNE = 8
+  JSOP_OBJECT = 80
+  JSOP_POP = 81
+  JSOP_POS = 82
+  JSOP_TRAP = 83
+  JSOP_GETARG = 84
+  JSOP_SETARG = 85
+  JSOP_GETVAR = 86
+  JSOP_SETVAR = 87
+  JSOP_UINT16 = 88
+  JSOP_NEWINIT = 89
+  JSOP_ARGUMENTS = 9
+  JSOP_ENDINIT = 90
+  JSOP_INITPROP = 91
+  JSOP_INITELEM = 92
+  JSOP_DEFSHARP = 93
+  JSOP_USESHARP = 94
+  JSOP_INCARG = 95
+  JSOP_INCVAR = 96
+  JSOP_DECARG = 97
+  JSOP_DECVAR = 98
+  JSOP_ARGINC = 99
+
   JSVERSION_UNKNOWN = -1
   JSVERSION_DEFAULT = 0
   JSVERSION_1_0 = 100
@@ -61,6 +293,7 @@ module SpiderMonkey
   callback(:JSMarkOp, [ :pointer, :pointer, :pointer ], :uint)
   callback(:JSTraceOp, [ :pointer, :pointer ], :void)
   callback(:JSTraceCallback, [ :pointer, :pointer, :uint ], :void)
+  callback(:JSTraceNamePrinter, [ :pointer, :string, :uint ], :void)
   callback(:JSReserveSlotsOp, [ :pointer, :pointer ], :uint)
   callback(:JSNewObjectMapOp, [ :pointer, :int, :pointer, :pointer, :pointer ], :pointer)
   callback(:JSObjectMapOp, [ :pointer, :pointer ], :void)
@@ -122,14 +355,29 @@ module SpiderMonkey
     end
 
   end
-  callback(:JSErrorCallback, [ :pointer, :string, :uint ], :pointer)
+  callback(:JSErrorCallback, [ :pointer, :string, :uint ], JSErrorFormatString)
   callback(:JSLocaleToUpperCase, [ :pointer, :pointer, :pointer ], :int)
   callback(:JSLocaleToLowerCase, [ :pointer, :pointer, :pointer ], :int)
   callback(:JSLocaleCompare, [ :pointer, :pointer, :pointer, :pointer ], :int)
   callback(:JSLocaleToUnicode, [ :pointer, :string, :pointer ], :int)
   callback(:JSPrincipalsTranscoder, [ :pointer, :pointer ], :int)
   callback(:JSObjectPrincipalsFinder, [ :pointer, :pointer ], :pointer)
-  # attach_function :JS_Abort, [  ], :void
+  attach_function :JS_Assert, [ :string, :string, :int ], :void
+  JS_BASIC_STATS = 1
+  class JSBasicStats < FFI::Struct
+    layout(
+           :num, :uint,
+           :max, :uint,
+           :sum, :double,
+           :sqsum, :double,
+           :logscale, :uint,
+           :hist, [:uint, 11]
+    )
+  end
+  attach_function :JS_BasicStatsAccum, [ :pointer, :uint ], :void
+  attach_function :JS_MeanAndStdDev, [ :uint, :double, :double, :pointer ], :double
+  attach_function :JS_DumpBasicStats, [ :pointer, :string, :pointer ], :void
+  attach_function :JS_DumpHistogram, [ :pointer, :pointer ], :void
   class JSCallsite < FFI::Struct
     layout(
            :pc, :uint,
@@ -157,7 +405,6 @@ module SpiderMonkey
     end
 
   end
-#  attach_function :JS_Backtrace, [ :int ], :pointer
   JSVAL_OBJECT = 0x0
   JSVAL_INT = 0x1
   JSVAL_DOUBLE = 0x2
@@ -263,6 +510,7 @@ module SpiderMonkey
   attach_function :JS_LeaveLocalRootScope, [ :pointer ], :void
   attach_function :JS_LeaveLocalRootScopeWithResult, [ :pointer, :long ], :void
   attach_function :JS_ForgetLocalRoot, [ :pointer, :pointer ], :void
+  attach_function :JS_DumpNamedRoots, [ :pointer, callback([ :string, :pointer, :pointer ], :void), :pointer ], :void
   JS_MAP_GCROOT_NEXT = 0
   JS_MAP_GCROOT_STOP = 1
   JS_MAP_GCROOT_REMOVE = 2
@@ -280,7 +528,10 @@ module SpiderMonkey
   class JSTracer < FFI::Struct
     layout(
            :context, :pointer,
-           :callback, :JSTraceCallback
+           :callback, :JSTraceCallback,
+           :debugPrinter, :JSTraceNamePrinter,
+           :debugPrintArg, :pointer,
+           :debugPrintIndex, :uint
     )
     def callback=(cb)
       @callback = cb
@@ -289,11 +540,20 @@ module SpiderMonkey
     def callback
       @callback
     end
+    def debugPrinter=(cb)
+      @debugPrinter = cb
+      self[:debugPrinter] = @debugPrinter
+    end
+    def debugPrinter
+      @debugPrinter
+    end
 
   end
   attach_function :JS_CallTracer, [ :pointer, :pointer, :uint ], :void
   attach_function :JS_TraceChildren, [ :pointer, :pointer, :uint ], :void
   attach_function :JS_TraceRuntime, [ :pointer ], :void
+  attach_function :JS_PrintTraceThingInfo, [ :string, :uint, :pointer, :pointer, :uint, :int ], :void
+  attach_function :JS_DumpHeap, [ :pointer, :pointer, :pointer, :uint, :pointer, :uint, :pointer ], :int
   attach_function :JS_GC, [ :pointer ], :void
   attach_function :JS_MaybeGC, [ :pointer ], :void
   attach_function :JS_SetGCCallback, [ :pointer, :JSGCCallback ], :JSGCCallback
@@ -1192,6 +1452,8 @@ module SpiderMonkey
   attach_function :JS_GetContextThread, [ :pointer ], :long
   attach_function :JS_SetContextThread, [ :pointer ], :long
   attach_function :JS_ClearContextThread, [ :pointer ], :long
+  JS_GC_ZEAL = 1
+  attach_function :JS_SetGCZeal, [ :pointer, :uchar ], :void
   JS_HASH_BITS = 32
   JS_GOLDEN_RATIO = 0x9E3779B9
   callback(:JSHashFunction, [ :pointer ], :uint)
@@ -1436,6 +1698,102 @@ module SpiderMonkey
            :u, JSTempValueUnion
     )
   end
+  attach_function :js_UntrapScriptCode, [ :pointer, :pointer ], :pointer
+  attach_function :JS_SetTrap, [ :pointer, :pointer, :pointer, :JSTrapHandler, :pointer ], :int
+  attach_function :JS_GetTrapOpcode, [ :pointer, :pointer, :pointer ], :int
+  attach_function :JS_ClearTrap, [ :pointer, :pointer, :pointer, :pointer, :pointer ], :void
+  attach_function :JS_ClearScriptTraps, [ :pointer, :pointer ], :void
+  attach_function :JS_ClearAllTraps, [ :pointer ], :void
+  attach_function :JS_HandleTrap, [ :pointer, :pointer, :pointer, :pointer ], :int
+  attach_function :JS_SetInterrupt, [ :pointer, :JSTrapHandler, :pointer ], :int
+  attach_function :JS_ClearInterrupt, [ :pointer, :pointer, :pointer ], :int
+  attach_function :JS_SetWatchPoint, [ :pointer, :pointer, :long, :JSWatchPointHandler, :pointer ], :int
+  attach_function :JS_ClearWatchPoint, [ :pointer, :pointer, :long, :pointer, :pointer ], :int
+  attach_function :JS_ClearWatchPointsForObject, [ :pointer, :pointer ], :int
+  attach_function :JS_ClearAllWatchPoints, [ :pointer ], :int
+  attach_function :JS_PCToLineNumber, [ :pointer, :pointer, :pointer ], :uint
+  attach_function :JS_LineNumberToPC, [ :pointer, :pointer, :uint ], :pointer
+  attach_function :JS_GetFunctionScript, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFunctionNative, [ :pointer, :pointer ], :JSNative
+  attach_function :JS_GetFunctionFastNative, [ :pointer, :pointer ], :JSFastNative
+  attach_function :JS_GetScriptPrincipals, [ :pointer, :pointer ], :pointer
+  attach_function :JS_FrameIterator, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFrameScript, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFramePC, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetScriptedCaller, [ :pointer, :pointer ], :pointer
+  attach_function :JS_StackFramePrincipals, [ :pointer, :pointer ], :pointer
+  attach_function :JS_EvalFramePrincipals, [ :pointer, :pointer, :pointer ], :pointer
+  attach_function :JS_GetFrameAnnotation, [ :pointer, :pointer ], :pointer
+  attach_function :JS_SetFrameAnnotation, [ :pointer, :pointer, :pointer ], :void
+  attach_function :JS_GetFramePrincipalArray, [ :pointer, :pointer ], :pointer
+  attach_function :JS_IsNativeFrame, [ :pointer, :pointer ], :int
+  attach_function :JS_GetFrameObject, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFrameScopeChain, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFrameCallObject, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFrameThis, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFrameFunction, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetFrameFunctionObject, [ :pointer, :pointer ], :pointer
+  attach_function :JS_IsConstructorFrame, [ :pointer, :pointer ], :int
+  attach_function :JS_IsDebuggerFrame, [ :pointer, :pointer ], :int
+  attach_function :JS_GetFrameReturnValue, [ :pointer, :pointer ], :long
+  attach_function :JS_SetFrameReturnValue, [ :pointer, :pointer, :long ], :void
+  attach_function :JS_GetFrameCalleeObject, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetScriptFilename, [ :pointer, :pointer ], :string
+  attach_function :JS_GetScriptBaseLineNumber, [ :pointer, :pointer ], :uint
+  attach_function :JS_GetScriptLineExtent, [ :pointer, :pointer ], :uint
+  attach_function :JS_GetScriptVersion, [ :pointer, :pointer ], :int
+  attach_function :JS_SetNewScriptHookProc, [ :pointer, :JSNewScriptHook, :pointer ], :void
+  attach_function :JS_SetDestroyScriptHookProc, [ :pointer, :JSDestroyScriptHook, :pointer ], :void
+  attach_function :JS_EvaluateUCInStackFrame, [ :pointer, :pointer, :pointer, :uint, :string, :uint, :pointer ], :int
+  attach_function :JS_EvaluateInStackFrame, [ :pointer, :pointer, :string, :uint, :string, :uint, :pointer ], :int
+  class JSPropertyDesc < FFI::Struct
+    layout(
+           :id, :long,
+           :value, :long,
+           :flags, :uchar,
+           :spare, :uchar,
+           :slot, :ushort,
+           :alias, :long
+    )
+  end
+  JSPD_ENUMERATE = 0x01
+  JSPD_READONLY = 0x02
+  JSPD_PERMANENT = 0x04
+  JSPD_ALIAS = 0x08
+  JSPD_ARGUMENT = 0x10
+  JSPD_VARIABLE = 0x20
+  JSPD_EXCEPTION = 0x40
+  JSPD_ERROR = 0x80
+  class JSPropertyDescArray < FFI::Struct
+    layout(
+           :length, :uint,
+           :array, :pointer
+    )
+  end
+  attach_function :JS_PropertyIterator, [ :pointer, :pointer ], :pointer
+  attach_function :JS_GetPropertyDesc, [ :pointer, :pointer, :pointer, :pointer ], :int
+  attach_function :JS_GetPropertyDescArray, [ :pointer, :pointer, :pointer ], :int
+  attach_function :JS_PutPropertyDescArray, [ :pointer, :pointer ], :void
+  attach_function :JS_SetDebuggerHandler, [ :pointer, :JSTrapHandler, :pointer ], :int
+  attach_function :JS_SetSourceHandler, [ :pointer, :JSSourceHandler, :pointer ], :int
+  attach_function :JS_SetExecuteHook, [ :pointer, :JSInterpreterHook, :pointer ], :int
+  attach_function :JS_SetCallHook, [ :pointer, :JSInterpreterHook, :pointer ], :int
+  attach_function :JS_SetObjectHook, [ :pointer, :JSObjectHook, :pointer ], :int
+  attach_function :JS_SetThrowHook, [ :pointer, :JSTrapHandler, :pointer ], :int
+  attach_function :JS_SetDebugErrorHook, [ :pointer, :JSDebugErrorHook, :pointer ], :int
+  attach_function :JS_GetObjectTotalSize, [ :pointer, :pointer ], :uint
+  attach_function :JS_GetFunctionTotalSize, [ :pointer, :pointer ], :uint
+  attach_function :JS_GetScriptTotalSize, [ :pointer, :pointer ], :uint
+  attach_function :JS_GetTopScriptFilenameFlags, [ :pointer, :pointer ], :uint
+  attach_function :JS_GetScriptFilenameFlags, [ :pointer ], :uint
+  attach_function :JS_FlagScriptFilenamePrefix, [ :pointer, :string, :uint ], :int
+  JSFILENAME_NULL = 0xffffffff
+  JSFILENAME_SYSTEM = 0x00000001
+  JSFILENAME_PROTECTED = 0x00000002
+  attach_function :JS_IsSystemObject, [ :pointer, :pointer ], :int
+  attach_function :JS_NewSystemObject, [ :pointer, :pointer, :pointer, :pointer, :int ], :pointer
+  attach_function :JS_GetGlobalDebugHooks, [ :pointer ], :pointer
+  attach_function :JS_SetContextDebugHooks, [ :pointer, :pointer ], :pointer
   class JSObjectMap < FFI::Struct
     layout(
            :nrefs, :int,
@@ -1501,7 +1859,6 @@ module SpiderMonkey
   attach_function :js_FindPropertyHelper, [ :pointer, :long, :pointer, :pointer, :pointer, :pointer ], :int
   attach_function :js_FindProperty, [ :pointer, :long, :pointer, :pointer, :pointer ], :int
   attach_function :js_FindIdentifierBase, [ :pointer, :long, :pointer ], :pointer
-#  attach_function :js_FindVariableScope, [ :pointer, :pointer ], :pointer
   attach_function :js_NativeGet, [ :pointer, :pointer, :pointer, :pointer, :pointer ], :int
   attach_function :js_NativeSet, [ :pointer, :pointer, :pointer, :pointer ], :int
   attach_function :js_GetPropertyHelper, [ :pointer, :pointer, :long, :pointer, :pointer ], :int

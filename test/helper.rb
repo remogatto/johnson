@@ -19,8 +19,8 @@ module Johnson
 
     def setup
       @runtime = Johnson::Runtime.new
-      #@runtime.delegate.gc_zeal = 2
-      #@runtime.delegate.debugger = Johnson::SpiderMonkey::Debugger.new(TestLogger.new)
+      # @runtime.delegate.gc_zeal = 2
+      # @runtime.delegate.debugger = Johnson::SpiderMonkey::Debugger.new(TestLogger.new)
     end
     
     def assert_js(expression, options={})
@@ -35,21 +35,21 @@ module Johnson
     end
   end
 
-  class NodeTestCase < Test::Unit::TestCase
-    include Johnson::Nodes
+#   class NodeTestCase < Test::Unit::TestCase
+#     include Johnson::Nodes
   
-    undef :default_test if method_defined? :default_test
+#     undef :default_test if method_defined? :default_test
     
-    def setup
-      @parser = Johnson::Parser
-    end
+#     def setup
+#       @parser = Johnson::Parser
+#     end
   
-    def assert_sexp(expected, actual)
-      assert_equal(expected, actual.to_sexp)
-    end
+#     def assert_sexp(expected, actual)
+#       assert_equal(expected, actual.to_sexp)
+#     end
 
-    def assert_ecma(expected, actual)
-      assert_equal(expected, actual.to_ecma)
-    end
-  end
+#     def assert_ecma(expected, actual)
+#       assert_equal(expected, actual.to_ecma)
+#     end
+#   end
 end

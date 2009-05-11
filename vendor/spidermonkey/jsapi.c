@@ -522,6 +522,20 @@ JS_ValueToObject(JSContext *cx, jsval v, JSObject **objp)
     return js_ValueToObject(cx, v, objp);
 }
 
+JS_PUBLIC_API(jsval)
+JS_ObjectToValue(JSContext *cx, JSObject *objp)
+{
+    CHECK_REQUEST(cx);
+    return (jsval)objp;
+}
+
+JS_PUBLIC_API(jsval)
+JS_StringToValue(JSContext *cx, JSString *str)
+{
+    CHECK_REQUEST(cx);
+    return JSVAL_SETTAG((jsval)(str), JSVAL_STRING);
+}
+
 JS_PUBLIC_API(JSFunction *)
 JS_ValueToFunction(JSContext *cx, jsval v)
 {

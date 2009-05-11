@@ -5,7 +5,6 @@ module Johnson
     class JSLandProxyTest < Johnson::TestCase
       module AModule
       end
-      
       class AClass
         attr_reader :args
         
@@ -98,7 +97,7 @@ module Johnson
         @runtime.evaluate("foo.ex_squared = 20;")
         assert_equal(20, foo.ex_squared)
       end
-
+      
       def test_use_ruby_global_object
         func = @runtime.evaluate("function(x) { return this.x2(x); }")
         foo  = Foo.new
@@ -132,8 +131,7 @@ module Johnson
       
       def test_getter_calls_indexer
         @runtime["foo"] = indexable = Indexable.new
-        indexable["bar"] = 10
-        
+        indexable["bar"] = 10        
         assert_js_equal(10, "foo.bar")
       end
       
@@ -203,7 +201,7 @@ module Johnson
         @runtime[:arr] = [1, 2, 3]
         assert_js_equal([2, 4, 6], "arr.collect(function(x) { return x * 2 })")
       end
-      
+
       def test_scope_for_with
         assert_js_equal(84, "with (rb) { b + b }", :b => 1, :rb => { "b" => 42 })
       end

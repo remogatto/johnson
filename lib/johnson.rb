@@ -1,32 +1,32 @@
 require "generator"
 require "johnson/version"
 
-# the command-line option parser and support libs
+# # the command-line option parser and support libs
 require "johnson/cli"
 
-# the native SpiderMonkey extension
-require "johnson/spidermonkey"
+# # visitable module and visitors
+# require "johnson/visitable"
+# require "johnson/visitors"
 
-# visitable module and visitors
-require "johnson/visitable"
-require "johnson/visitors"
+# # parse tree nodes
+# require "johnson/nodes"
 
-# parse tree nodes
-require "johnson/nodes"
+if ENV['JOHNSON_FFI'] || RUBY_PLATFORM =~ /java/
+  gem 'ffi', '>=0.3.2' unless RUBY_PLATFORM =~ /java/
+  require 'ffi'
+  require 'johnson/spidermonkey/ffi-spidermonkey.rb'
+  require 'johnson/spidermonkey/ruby_land_proxy.rb'
+  require 'johnson/spidermonkey/js_land_proxy.rb'
+  require 'johnson/spidermonkey/conversions'
+  require 'johnson/spidermonkey/runtime'
+else
+  # load the standard extension
+end
 
-# the SpiderMonkey bits written in Ruby
-require "johnson/spidermonkey/runtime"
-require "johnson/spidermonkey/context"
-require "johnson/spidermonkey/js_land_proxy"
-require "johnson/spidermonkey/ruby_land_proxy"
-require "johnson/spidermonkey/mutable_tree_visitor"
-require "johnson/spidermonkey/debugger"
-require "johnson/spidermonkey/immutable_node"
-
-# the 'public' interface
+# # the 'public' interface
 require "johnson/error"
 require "johnson/runtime"
-require "johnson/parser"
+# require "johnson/parser"
 
 # make sure all the Johnson JavaScript libs are in the load path
 $LOAD_PATH.push(File.expand_path("#{File.dirname(__FILE__)}/../js"))

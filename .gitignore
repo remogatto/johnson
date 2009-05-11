@@ -15,10 +15,12 @@
 /vendor/spidermonkey/*.OBJ
 
 /vendor/spidermonkey/editline/*.OBJ
+/generated
+
 .*.swp
 tags
 .DS_Store
-
+.emacs*
 *~
 *.*~
 

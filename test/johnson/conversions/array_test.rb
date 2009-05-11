@@ -11,6 +11,7 @@ module Johnson
       def test_array_index_set
         @runtime[:list] = []
         @runtime.evaluate("list[0] = 42")
+        assert_equal(42, @runtime.evaluate("list[0]"))
         assert_equal(42, @runtime[:list][0])
       end
 
@@ -25,8 +26,9 @@ module Johnson
             new_list.push(x + 1);
           }
         ")
-        assert_equal(list.map { |x| x + 1}, @runtime['new_list'].to_a)
+        assert_equal(list.map { |x| x + 1 }, @runtime['new_list'].to_a)
       end
+
     end
   end
 end

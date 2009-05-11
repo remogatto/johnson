@@ -357,6 +357,12 @@ JS_ConvertValue(JSContext *cx, jsval v, JSType type, jsval *vp);
 extern JS_PUBLIC_API(JSBool)
 JS_ValueToObject(JSContext *cx, jsval v, JSObject **objp);
 
+extern JS_PUBLIC_API(jsval)
+JS_ObjectToValue(JSContext *cx, JSObject *objp);
+
+extern JS_PUBLIC_API(jsval)
+JS_ObjectToString(JSContext *cx, JSString *str);
+
 extern JS_PUBLIC_API(JSFunction *)
 JS_ValueToFunction(JSContext *cx, jsval v);
 
