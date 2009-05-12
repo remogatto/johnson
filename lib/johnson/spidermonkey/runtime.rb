@@ -4,7 +4,7 @@ module Johnson
 
       CONTEXT_MAP_KEY = :johnson_context_map
 
-      attr_reader :global
+      attr_reader :global, :gc_zeal
 
       include HasPointer, Conversions, JSLandProxy
 
@@ -15,6 +15,7 @@ module Johnson
         @debugger = nil
         @gcthings = {}
         @traps = []
+        @gc_zeal = 0
 
         @global = SpiderMonkey.JS_GetGlobalObject(context)
 
@@ -56,6 +57,10 @@ module Johnson
 
       def []=(key, value)
         global_proxy[key] = value
+      end
+
+      def gc_zeal=(zeal)
+        SpiderMonkey.JS_SetGCZeal(context, zeal)
       end
 
       private

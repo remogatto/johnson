@@ -32,6 +32,7 @@ module Johnson
     attach_function :JS_EndRequest, [ :pointer ], :void
 
     # GC
+    attach_function :JS_SetGCZeal, [ :pointer, :uchar ], :void
     attach_function :JS_GC, [ :pointer ], :void
 
     callback(:JSBranchCallback, [ :pointer, :pointer ], :int)

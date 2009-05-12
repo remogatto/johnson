@@ -19,7 +19,7 @@ module Johnson
 
     def setup
       @runtime = Johnson::Runtime.new
-      # @runtime.delegate.gc_zeal = 2
+      @runtime.delegate.gc_zeal = 0
       # @runtime.delegate.debugger = Johnson::SpiderMonkey::Debugger.new(TestLogger.new)
     end
     

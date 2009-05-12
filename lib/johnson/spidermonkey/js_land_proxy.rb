@@ -56,11 +56,11 @@ module Johnson
       end
 
       def add_js_proxy(js_value, ruby)
-        (@js_proxies ||= { }).store(js_value, ruby)
+        (@js_proxies ||= { })[js_value] = ruby
       end
 
       def add_ruby_proxy(ruby, js_value)
-        (@ruby_proxies ||= { }).store(ruby.object_id, js_value)
+        (@ruby_proxies ||= { })[ruby.object_id] = js_value
       end
 
       def has_ruby_proxy?(ruby)
