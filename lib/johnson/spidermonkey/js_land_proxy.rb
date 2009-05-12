@@ -121,7 +121,7 @@ module Johnson
         @js_proxies[js_value]
       end
 
-      def respond_to?(js_context, obj, name)
+      def js_respond_to?(js_context, obj, name)
         ruby = get_ruby(js_context, obj)
 
         autovivified?(ruby, name) || \
@@ -151,7 +151,7 @@ module Johnson
       def resolve(js_context, obj, id, flags, objp)
         name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(js_context, id))
 
-        if respond_to?(js_context, obj, name)
+        if js_respond_to?(js_context, obj, name)
           SpiderMonkey.JS_DefineProperty(js_context,
                                          obj, 
                                          name, 

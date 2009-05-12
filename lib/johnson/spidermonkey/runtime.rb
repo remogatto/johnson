@@ -2,19 +2,16 @@ module Johnson
   module SpiderMonkey
     class Runtime
 
-      include Conversions, JSLandProxy
+      include HasPointer, Conversions, JSLandProxy
 
       def initialize
-        @runtime = SpiderMonkey.JS_NewRuntime(0x100000)
+        @ptr = SpiderMonkey.JS_NewRuntime(0x100000)
+
         @compiled_scripts = {}
         @debugger = nil
         @gcthings = {}
         @traps = []
 
-        SpiderMonkey.JS_SetErrorReporter(context, method(:report_error).to_proc)
-        SpiderMonkey.JS_SetVersion(context, JSVERSION_LATEST)
-
-        init_extensions
         self["Ruby"] = Object
       end
 
@@ -39,7 +36,11 @@ module Johnson
       end
 
       def global
-        @global ||= Global.new(context).to_ptr
+        SpiderMonkey.JS_GetGlobalObject(context)
+      end
+
+      def has_global?
+        not (@global.nil? or global.null?)
       end
 
       def global_proxy
@@ -56,53 +57,8 @@ module Johnson
 
       private
 
-      def report_error(context, message, report)
-        ex = FFI::MemoryPointer.new(:long)
-        ok = SpiderMonkey.JS_GetPendingException(context, ex)
-        if ok == JS_TRUE
-          exception = convert_to_ruby(ex.read_long)
-          raise Error, exception['message']
-        end
-      end
-
       def init_context
-        SpiderMonkey.JS_NewContext(@runtime, 8192)
-      end
-
-      def define_property(js_context, obj, argc, argv, retval)
-        args = argv.get_array_of_int(0, argc)
-        flags = argc > 3 ? SpiderMonkey.JSVAL_TO_INT(args[3]) : 0
-        retval.write_long(JSVAL_VOID)
-        name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(js_context, args[1]))    
-        js_object = FFI::MemoryPointer.new(:pointer)
-        SpiderMonkey.JS_ValueToObject(context, args[0], js_object)
-        SpiderMonkey.JS_DefineProperty(js_context, js_object.read_pointer, name, argc > 2 ? args[2] : JSVAL_VOID, nil, nil, flags)
-      end
-
-      def init_extensions
-        object = FFI::MemoryPointer.new(:long)
-        object_ptr = FFI::MemoryPointer.new(:pointer)
-
-        SpiderMonkey.JS_GetProperty(context, global, "Object", object)
-
-        SpiderMonkey.JS_ValueToObject(context, object.read_long , object_ptr)
-
-        SpiderMonkey.JS_DefineFunction(context, object_ptr.read_pointer,
-                                       "defineProperty", 
-                                       method(:define_property).to_proc, 4, 0)
-        
-        SpiderMonkey.JS_DefineProperty(context, object_ptr.read_pointer, 
-                                       "READ_ONLY",
-                                       SpiderMonkey.INT_TO_JSVAL(0x02), nil, nil, JSPROP_READONLY)
-        
-        SpiderMonkey.JS_DefineProperty(context, object_ptr.read_pointer, 
-                                       "ITERABLE",
-                                       SpiderMonkey.INT_TO_JSVAL(0x01), nil, nil, JSPROP_READONLY)
-        
-        SpiderMonkey.JS_DefineProperty(context, object_ptr.read_pointer, 
-                                       "NON_DELETABLE",
-                                       SpiderMonkey.INT_TO_JSVAL(0x04), nil, nil, JSPROP_READONLY)
-
+        Context.new(self)
       end
 
       def get_global_proxy

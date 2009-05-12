@@ -18,7 +18,9 @@ if ENV['JOHNSON_FFI'] || RUBY_PLATFORM =~ /java/
   require 'johnson/spidermonkey/ruby_land_proxy.rb'
   require 'johnson/spidermonkey/js_land_proxy.rb'
   require 'johnson/spidermonkey/conversions'
+  require 'johnson/spidermonkey/has_pointer'
   require 'johnson/spidermonkey/global'
+  require 'johnson/spidermonkey/context'
   require 'johnson/spidermonkey/runtime'
 else
   # load the standard extension

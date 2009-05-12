@@ -1,6 +1,9 @@
 module Johnson
   module SpiderMonkey
+
     class Global
+      
+      include HasPointer
 
       def initialize(js_context)
         @js_context = js_context
@@ -16,8 +19,10 @@ module Johnson
         @global_class.resolve = method(:resolve).to_proc
         @global_class.convert = SpiderMonkey.method(:JS_ConvertStub).to_proc
         @global_class.finalize = SpiderMonkey.method(:JS_FinalizeStub).to_proc
-        @global_ptr = SpiderMonkey.JS_NewObject(@js_context, @global_class, nil, nil)
-        SpiderMonkey.JS_InitStandardClasses(@js_context, @global_ptr)
+        
+        @ptr = SpiderMonkey.JS_NewObject(@js_context, @global_class, nil, nil)
+        
+        SpiderMonkey.JS_InitStandardClasses(@js_context, @ptr)
       end
 
       def enumerate(js_context, obj)
@@ -37,10 +42,7 @@ module Johnson
         JS_TRUE
       end
 
-      def to_ptr
-        @global_ptr
-      end
-
     end
+
   end
 end

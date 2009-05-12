@@ -24,16 +24,14 @@ module Johnson
     attach_function :JS_DestroyContext, [ :pointer ], :void
 
     # Global
-
+    attach_function :JS_GetGlobalObject, [ :pointer ], :pointer
     attach_function :JS_SetGlobalObject, [ :pointer, :pointer ], :void
 
     # Requests
-
     attach_function :JS_BeginRequest, [ :pointer ], :void
     attach_function :JS_EndRequest, [ :pointer ], :void
 
     # GC
-    
     attach_function :JS_GC, [ :pointer ], :void
 
     callback(:JSBranchCallback, [ :pointer, :pointer ], :int)
