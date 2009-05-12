@@ -21,8 +21,6 @@ module Johnson
         @global_class.finalize = SpiderMonkey.method(:JS_FinalizeStub).to_proc
         
         @ptr = SpiderMonkey.JS_NewObject(@js_context, @global_class, nil, nil)
-        
-        SpiderMonkey.JS_InitStandardClasses(@js_context, @ptr)
       end
 
       def enumerate(js_context, obj)

@@ -177,16 +177,16 @@ module Johnson
         end
 
         js_result = FFI::MemoryPointer.new(:pointer)
-        js_args = FFI::MemoryPointer.new(:int, args.size)
+        js_args = FFI::MemoryPointer.new(:long, args.size)
 
         if args.size > 0
           js_args.put_array_of_int(0, args.map { |arg| @runtime.convert_to_js(arg).read_long })
         end
-
+        
         js_value = @runtime.convert_to_js(this)
         js_object = FFI::MemoryPointer.new(:pointer)
         SpiderMonkey.JS_ValueToObject(@runtime.context, js_value.read_long, js_object)
-
+        
         ok = SpiderMonkey.JS_CallFunctionValue(@runtime.context, 
                                                js_object.read_pointer, 
                                                @js_value, 

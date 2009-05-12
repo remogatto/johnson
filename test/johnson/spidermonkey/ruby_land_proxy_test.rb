@@ -214,6 +214,7 @@ module Johnson
       # end
       
       def test_array_multiple_assignment
+        @runtime.evaluate("[1,2,3]")
         a = @runtime.evaluate("[1,2,3]")
         x, y, z = a
         

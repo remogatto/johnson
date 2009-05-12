@@ -4,6 +4,8 @@ module Johnson
 
       CONTEXT_MAP_KEY = :johnson_context_map
 
+      attr_reader :global
+
       include HasPointer, Conversions, JSLandProxy
 
       def initialize
@@ -13,6 +15,8 @@ module Johnson
         @debugger = nil
         @gcthings = {}
         @traps = []
+
+        @global = SpiderMonkey.JS_GetGlobalObject(context)
 
         self["Ruby"] = Object
       end
@@ -34,13 +38,8 @@ module Johnson
       end
 
       def context
-#        @context ||= init_context
         contexts = (Thread.current[CONTEXT_MAP_KEY] ||= {})
         contexts[self.object_id] ||= Context.new(self)
-      end
-
-      def global
-        SpiderMonkey.JS_GetGlobalObject(context)
       end
 
       def has_global?

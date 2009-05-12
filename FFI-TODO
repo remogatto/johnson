@@ -2,7 +2,7 @@
 
 [ ] Conversions
   [ ] Regexp
-  [ ] Thread
+  [x] Thread
   [ ] Struct
 
 [ ] Runtime

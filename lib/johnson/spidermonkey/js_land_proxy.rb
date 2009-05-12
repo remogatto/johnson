@@ -75,6 +75,10 @@ module Johnson
         @ruby_proxies[ruby.object_id]
       end
 
+      def get_js_proxy(js_value)
+        @js_proxies[js_value]
+      end
+
       def make_js_land_proxy(ruby)
 
         if has_ruby_proxy?(ruby)

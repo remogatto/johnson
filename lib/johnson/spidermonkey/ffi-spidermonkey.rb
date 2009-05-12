@@ -41,6 +41,10 @@ module Johnson
 
     attach_function :JS_SetOptions, [ :pointer, :uint ], :uint
 
+    # Object
+
+    attach_function :JS_HasInstance, [ :pointer, :pointer, :long, :pointer ], :int
+
     # Roots
 
     attach_function :JS_AddRoot, [ :pointer, :pointer ], :int
@@ -187,6 +191,8 @@ module Johnson
 
     # Function
 
+    attach_function :JS_CallFunctionValue, [ :pointer, :pointer, :long, :uint, :pointer, :pointer ], :int
+    attach_function :JS_CallFunctionName, [ :pointer, :pointer, :string, :uint, :pointer, :pointer ], :int
     attach_function :JS_ArgvCallee, [ :pointer ], :long
 
     # Array
@@ -195,10 +201,6 @@ module Johnson
     attach_function :JS_GetArrayLength, [ :pointer, :pointer, :pointer ], :int
     attach_function :JS_SetArrayLength, [ :pointer, :pointer, :uint ], :int
     attach_function :JS_HasArrayLength, [ :pointer, :pointer, :pointer ], :int
-
-    # Function
-
-    attach_function :JS_CallFunctionValue, [ :pointer, :pointer, :long, :uint, :pointer, :pointer ], :int
 
     # Id
 
@@ -442,6 +444,9 @@ module Johnson
       end
       def JSVAL_IS_INT(v)
         (v & JSVAL_INT != 0) && (v != JSVAL_VOID)
+      end
+      def JSVAL_IS_OBJECT(v)      
+        JSVAL_TAG(v) == JSVAL_OBJECT
       end
       def JS_BIT(n)
         1 << n
