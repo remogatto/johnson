@@ -6,15 +6,15 @@ module Johnson
       # def initialize
       #   raise Johnson::Error, "#{self.class.name} is an internal support class."
       # end
-      
-      # private :initialize
-      
+            
       # FIXME: need to revisit array vs non-array proxy, to_a/to_ary semantics, etc.
 
       alias_method :to_ary, :to_a
       attr_reader :js
 
       class << self
+
+        protected :new
 
         def make_ruby_land_proxy(runtime, js)
           if @js_proxies && @js_proxies.has_key?(js)

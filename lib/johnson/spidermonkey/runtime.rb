@@ -15,7 +15,7 @@ module Johnson
         self["Ruby"] = Object
       end
 
-      def evaluate(script, filename=nil, linenum=nil)
+      def evaluate(script, filename = nil, linenum = nil)
         compile_and_evaluate(script, filename, linenum)
 
         # FIXME: in the final release the lines below should be
