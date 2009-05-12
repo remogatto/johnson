@@ -25,7 +25,7 @@ module Johnson
       elsif ruby.kind_of?(Object) || ruby.kind_of?(Array)
         # FIXME: JSLandProxy should be a module
         if ruby.kind_of?(SpiderMonkey::RubyLandProxy)
-          jsvalue = ruby.js
+          jsvalue = ruby.js_value
           FFI::MemoryPointer.new(:long).write_long(jsvalue)
         else
           jsvalue = make_js_land_proxy(ruby)

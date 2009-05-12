@@ -2,26 +2,18 @@ module Johnson
   module SpiderMonkey
     class RubyLandProxy
       include Enumerable
-
-      # def initialize
-      #   raise Johnson::Error, "#{self.class.name} is an internal support class."
-      # end
             
       # FIXME: need to revisit array vs non-array proxy, to_a/to_ary semantics, etc.
 
       alias_method :to_ary, :to_a
-      attr_reader :js
+      attr_reader :js_value
 
       class << self
 
         protected :new
 
         def make_ruby_land_proxy(runtime, js)
-          if @js_proxies && @js_proxies.has_key?(js)
-            return @js_proxies[js]
-          else
-            (@js_proxies ||= { }).store(js, self.new(runtime, js))
-          end
+          runtime.has_js_proxy?(js) ? runtime.get_js_proxy(js) : runtime.add_js_proxy(js, self.new(runtime, js))
         end
 
       end
@@ -29,7 +21,7 @@ module Johnson
       def initialize(runtime, js_value)
         @runtime = runtime
         @context = runtime.context
-        @js = js_value
+        @js_value = js_value
         @js_object = js_object
       end      
 
@@ -142,7 +134,7 @@ module Johnson
       end
 
       def function?
-        SpiderMonkey.JS_TypeOfValue(@context, @js) == JSTYPE_FUNCTION ? true : false
+        SpiderMonkey.JS_TypeOfValue(@context, @js_value) == JSTYPE_FUNCTION ? true : false
       end
 
       def function_property?(name)
@@ -197,7 +189,7 @@ module Johnson
 
         ok = SpiderMonkey.JS_CallFunctionValue(@runtime.context, 
                                                js_object.read_pointer, 
-                                               @js, 
+                                               @js_value, 
                                                args.size, 
                                                js_args,
                                                js_result)
@@ -210,7 +202,7 @@ module Johnson
 
       def js_object
         js_object = FFI::MemoryPointer.new(:pointer)
-        SpiderMonkey.JS_ValueToObject(@runtime.context, @js, js_object)
+        SpiderMonkey.JS_ValueToObject(@runtime.context, @js_value, js_object)
         js_object.read_pointer
       end
 

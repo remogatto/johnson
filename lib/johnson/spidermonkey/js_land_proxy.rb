@@ -50,6 +50,11 @@ module Johnson
         @js_land_class_proxy_class
       end
       
+      def add_proxy(js_value, ruby_value)
+        add_js_proxy(js_value, ruby_value)
+        add_ruby_proxy(ruby_value, js_value)
+      end
+
       def add_js_proxy(js_value, ruby)
         (@js_proxies ||= { }).store(js_value, ruby)
       end
@@ -58,14 +63,22 @@ module Johnson
         (@ruby_proxies ||= { }).store(ruby.object_id, js_value)
       end
 
-      def has_proxy?(ruby)
+      def has_ruby_proxy?(ruby)
         @ruby_proxies && @ruby_proxies.include?(ruby.object_id)
+      end
+
+      def has_js_proxy?(js_value)
+        @js_proxies && @js_proxies.include?(js_value)
+      end
+
+      def get_ruby_proxy(ruby)
+        @ruby_proxies[ruby.object_id]
       end
 
       def make_js_land_proxy(ruby)
 
-        if has_proxy?(ruby)
-          @ruby_proxies[ruby.object_id]
+        if has_ruby_proxy?(ruby)
+          get_ruby_proxy(ruby)
         else
           klass = if ruby.kind_of?(Class)
                     js_land_class_proxy_class
@@ -82,11 +95,11 @@ module Johnson
           SpiderMonkey.JS_DefineFunction(context, js_object, "toArray", method(:to_array).to_proc, 0, 0)
           SpiderMonkey.JS_DefineFunction(context, js_object, "toString", method(:to_string).to_proc, 0, 0)
           
-          add_js_proxy(js_value, ruby)
-          add_ruby_proxy(ruby, js_value)
+          add_proxy(js_value, ruby)
 
           js_value            
         end
+
       end
       
       def to_string(js_context, obj, argc, argv, retval)

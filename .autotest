@@ -5,7 +5,6 @@ Autotest.add_hook(:initialize) do |at|
   at.add_exception("test/helper.rb")
   at.add_exception("test/johnson/conversions/regexp")
   at.add_exception("test/johnson/conversions/struct")
-  at.add_exception("test/johnson/conversions/thread")
   at.add_exception("test/johnson/nodes")
   at.add_exception("test/johnson/visitors")
 
