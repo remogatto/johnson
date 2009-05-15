@@ -20,6 +20,7 @@ if ENV['JOHNSON_FFI'] || RUBY_PLATFORM =~ /java/
   require 'johnson/spidermonkey/conversions'
   require 'johnson/spidermonkey/has_pointer'
   require 'johnson/spidermonkey/global'
+  require 'johnson/spidermonkey/root'
   require 'johnson/spidermonkey/context'
   require 'johnson/spidermonkey/runtime'
 else

@@ -42,7 +42,7 @@ module Johnson
       # end
 
       def to_s
-        @runtime.convert_js_string_to_ruby(SpiderMonkey.JS_ValueToString(@context, @js_object))
+        @runtime.convert_js_string_to_ruby(SpiderMonkey.JS_ValueToString(@context, @js_value))
       end
 
       def [](name)
@@ -147,27 +147,47 @@ module Johnson
       private
 
       def get(name)
+
         js_rvalue = FFI::MemoryPointer.new(:pointer)
-        if name.kind_of?(Fixnum)
-          SpiderMonkey.JS_GetElement(@context, @js_object, name, js_rvalue)
-        elsif name.kind_of?(String)
-          ok = SpiderMonkey.JS_GetProperty(@context, @js_object, name, js_rvalue)
-        else
-          # FIXME: throw an exception?
+        proxy_value = FFI::MemoryPointer.new(:long).write_long(@js_value)
+
+        @runtime.context.root(:ruby => true) do |r|
+          
+          r.add(proxy_value)
+
+          if name.kind_of?(Fixnum)
+            r.check { SpiderMonkey.JS_GetElement(@context, @js_object, name, js_rvalue) }
+          else
+            r.check { SpiderMonkey.JS_GetProperty(@context, @js_object, name, js_rvalue) }
+          end
+          
+          @runtime.convert_to_ruby(js_rvalue.read_long)
+
         end
-        @runtime.convert_to_ruby(js_rvalue.read_long)
+
       end
 
       def set(name, value)
-        js_value = @runtime.convert_to_js(value)
-        if name.kind_of?(Fixnum)
-          SpiderMonkey.JS_SetElement(@context, @js_object, name, js_value)
-        elsif name.kind_of?(String)
-          SpiderMonkey.JS_SetProperty(@context, @js_object, name, js_value)
-        else
-          # FIXME: throw an exception?
+
+        proxy_value = FFI::MemoryPointer.new(:long).write_long(@js_value)
+        
+        @runtime.context.root(:ruby => true) do |r|
+
+          js_value = @runtime.convert_to_js(value)
+          
+          r.add(js_value)
+
+          if name.kind_of?(Fixnum)
+            r.check { SpiderMonkey.JS_SetElement(@context, @js_object, name, js_value) }
+          elsif name.kind_of?(String)
+            r.check { SpiderMonkey.JS_SetProperty(@context, @js_object, name, js_value) }
+          else
+            # FIXME: throw an exception?
+          end
+
+          value
         end
-        value
+
       end
 
       def native_call(this, *args)
@@ -179,21 +199,37 @@ module Johnson
         js_result = FFI::MemoryPointer.new(:pointer)
         js_args = FFI::MemoryPointer.new(:long, args.size)
 
-        if args.size > 0
-          js_args.put_array_of_int(0, args.map { |arg| @runtime.convert_to_js(arg).read_long })
+        @runtime.context.root(:ruby => true) do |r|
+
+          if args.size > 0
+            js_args.put_array_of_int(0, 
+                                     args.map do |arg| 
+                                       result = @runtime.convert_to_js(arg)
+                                       r.add(result)
+                                       result.read_long
+                                     end
+                                     )
+          end
+          
+          js_value = @runtime.convert_to_js(this)
+
+          r.add(js_value)
+
+          js_object = FFI::MemoryPointer.new(:pointer)
+          SpiderMonkey.JS_ValueToObject(@runtime.context, js_value.read_long, js_object)
+          
+          r.check { SpiderMonkey.JS_CallFunctionValue(@runtime.context, 
+                                            js_object.read_pointer, 
+                                            @js_value, 
+                                            args.size, 
+                                            js_args,
+                                                      js_result) }
+          
+
+          @runtime.convert_to_ruby(js_result.read_long)
+
         end
-        
-        js_value = @runtime.convert_to_js(this)
-        js_object = FFI::MemoryPointer.new(:pointer)
-        SpiderMonkey.JS_ValueToObject(@runtime.context, js_value.read_long, js_object)
-        
-        ok = SpiderMonkey.JS_CallFunctionValue(@runtime.context, 
-                                               js_object.read_pointer, 
-                                               @js_value, 
-                                               args.size, 
-                                               js_args,
-                                               js_result)
-        @runtime.convert_to_ruby(js_result.read_long)
+
       end
 
       def call_function_property(name, *args)

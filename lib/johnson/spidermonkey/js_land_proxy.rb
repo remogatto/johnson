@@ -84,6 +84,7 @@ module Johnson
         if has_ruby_proxy?(ruby)
           get_ruby_proxy(ruby)
         else
+
           klass = if ruby.kind_of?(Class)
                     js_land_class_proxy_class
                   elsif ruby.respond_to?(:call)
@@ -92,16 +93,22 @@ module Johnson
                     js_land_proxy_class            
                   end
 
-          js_object = SpiderMonkey.JS_NewObject(context, klass, nil, nil)
-          js_value = SpiderMonkey.JS_ObjectToValue(context, js_object)
+          context.root do |r|
 
-          SpiderMonkey.JS_DefineFunction(context, js_object, "__noSuchMethod__", method(:js_method_missing).to_proc, 2, 0)
-          SpiderMonkey.JS_DefineFunction(context, js_object, "toArray", method(:to_array).to_proc, 0, 0)
-          SpiderMonkey.JS_DefineFunction(context, js_object, "toString", method(:to_string).to_proc, 0, 0)
+            js_object = r.check { SpiderMonkey.JS_NewObject(context, klass, nil, nil) }
+            js_value = r.check { SpiderMonkey.JS_ObjectToValue(context, js_object) }
+
+            r.add(js_object)
+
+            r.check { SpiderMonkey.JS_DefineFunction(context, js_object, "__noSuchMethod__", method(:js_method_missing).to_proc, 2, 0) }
+            r.check { SpiderMonkey.JS_DefineFunction(context, js_object, "toArray", method(:to_array).to_proc, 0, 0) }
+            r.check { SpiderMonkey.JS_DefineFunction(context, js_object, "toString", method(:to_string).to_proc, 0, 0) }
           
-          add_proxy(js_value, ruby)
+            add_proxy(js_value, ruby)
+            js_value
 
-          js_value            
+          end 
+
         end
 
       end
@@ -129,7 +136,7 @@ module Johnson
         send_with_possible_block(ruby, method_name, params)
         JS_TRUE
       end
-
+      
       def js_value_is_proxy?(js_value)
         @js_proxies && @js_proxies.include?(js_value)
       end
@@ -166,118 +173,161 @@ module Johnson
       end
 
       def resolve(js_context, obj, id, flags, objp)
-        name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(js_context, id))
 
-        if js_respond_to?(js_context, obj, name)
-          SpiderMonkey.JS_DefineProperty(js_context,
-                                         obj, 
-                                         name, 
-                                         JSVAL_VOID,
-                                         method(:get_and_destroy_resolved_property).to_proc, 
-                                         method(:set).to_proc, 
-                                         JSPROP_ENUMERATE)
+        context.root do |r|
+
+          name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(js_context, id))
+
+          if js_respond_to?(js_context, obj, name)
+            r.check do 
+              SpiderMonkey.JS_DefineProperty(js_context, obj, name, JSVAL_VOID, method(:get_and_destroy_resolved_property).to_proc, 
+                                             method(:set).to_proc, JSPROP_ENUMERATE)
+            end
+          end
+          
+          objp.write_pointer(obj)
+          
+          JS_TRUE
         end
 
-        objp.write_pointer(obj)
-
-        JS_TRUE
       end
 
       def get_and_destroy_resolved_property(js_context, obj, id, retval)
         name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(js_context, id))
-        SpiderMonkey.JS_DeleteProperty(js_context, obj, name)
-        get(js_context, obj, id, retval)
-        JS_TRUE
+
+        context.root do |r|
+          js_object = FFI::MemoryPointer.new(:long)
+          SpiderMonkey.JS_ValueToObject(js_context, id, js_object)
+          r.add(js_object.read_pointer)
+          r.check { SpiderMonkey.JS_DeleteProperty(js_context, obj, name) }
+          get(js_context, obj, id, retval)
+          JS_TRUE
+        end
+
       end
 
       def evaluate_js_property_expression(property, retval)
-        ok = SpiderMonkey.JS_EvaluateScript(context, 
-                                            global,
-                                            property, 
-                                            property.size, 
-                                            "johnson:evaluate_js_property_expression", 1,
-                                            retval)
+        SpiderMonkey.JS_EvaluateScript(context, 
+                                       global,
+                                       property, 
+                                       property.size, 
+                                       "johnson:evaluate_js_property_expression", 1,
+                                       retval)
       end
 
       def get_ruby(context, obj)
         @js_proxies[SpiderMonkey.JS_ObjectToValue(context, obj)]
       end
       
-      def get(context, obj, id, retval)
+      def get(js_context, obj, id, retval)
         name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(context, id))
         ruby = get_ruby(context, obj)
 
-        # Does this proxy refer to a ruby indexable object?
-        if SpiderMonkey.JSVAL_IS_INT(id)
-          idx = name.to_i
-          if ruby.respond_to?(:[])
-            retval.write_long(convert_to_js(ruby[idx]).read_long)
-            return JS_TRUE
-          end
-        end
+        context.root do |r|
 
-        if name == '__iterator__'
-          evaluate_js_property_expression("Johnson.Generator.create", retval)
+          js_object = FFI::MemoryPointer.new(:long)
+          SpiderMonkey.JS_ValueToObject(js_context, id, js_object)
+          r.add(js_object.read_pointer)
+
+          # Does this proxy refer to a ruby indexable object?
+          if SpiderMonkey.JSVAL_IS_INT(id)
+            idx = name.to_i
+            if ruby.respond_to?(:[])
+              retval.write_long(convert_to_js(ruby[idx]).read_long)
+              return JS_TRUE
+            end
+          end
           
-        elsif autovivified?(ruby, name)
-          retval.write_long(convert_to_js(autovivified(ruby, name)).read_long)
+          if name == '__iterator__'
+            evaluate_js_property_expression("Johnson.Generator.create", retval)
+          
+          elsif autovivified?(ruby, name)
+            retval.write_long(convert_to_js(autovivified(ruby, name)).read_long)
 
-          # Are we asking for a constant?
-        elsif ruby.kind_of?(Class) && ruby.constants.include?(name)
-          retval.write_long(convert_to_js(ruby.const_get(name)).read_long)
+            # Are we asking for a constant?
+          elsif ruby.kind_of?(Class) && ruby.constants.include?(name)
+            retval.write_long(convert_to_js(ruby.const_get(name)).read_long)
 
-          # Are we asking for a global?
-        elsif name.match(/^\$/) && global_variables.include?(name)
-          retval.write_long(convert_to_js(eval(name)).read_long)
+            # Are we asking for a global?
+          elsif name.match(/^\$/) && global_variables.include?(name)
+            retval.write_long(convert_to_js(eval(name)).read_long)
 
-        elsif attribute?(ruby, name)
-          retval.write_long(convert_to_js(ruby.send(name.to_sym)).read_long)
+          elsif attribute?(ruby, name)
+            retval.write_long(convert_to_js(ruby.send(name.to_sym)).read_long)
 
-        elsif ruby.respond_to?(name.to_sym)
-          retval.write_long(convert_to_js(ruby.method(name.to_sym)).read_long)
+          elsif ruby.respond_to?(name.to_sym)
+            retval.write_long(convert_to_js(ruby.method(name.to_sym)).read_long)
 
-        elsif ruby.respond_to?(:key?) and ruby.respond_to?(:[])
-          if ruby.key?(name)
-            retval.write_long(convert_to_js(ruby[name]).read_long)
+          elsif ruby.respond_to?(:key?) and ruby.respond_to?(:[])
+            if ruby.key?(name)
+              retval.write_long(convert_to_js(ruby[name]).read_long)
+            end
           end
-        end
 
-        JS_TRUE
+          JS_TRUE
+        end
       end
 
-      def set(context, obj, idval, vp)
+      def set(js_context, obj, id, vp)
 
-        name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(context, idval))
+        name = SpiderMonkey.JS_GetStringBytes(SpiderMonkey.JS_ValueToString(context, id))
         ruby = get_ruby(context, obj)
 
-        if SpiderMonkey::JSVAL_IS_INT(idval)
-          idx = name.to_i
-          if ruby.respond_to?(:[]=)
-            ruby[idx] = convert_to_ruby(vp.read_long) 
-          end
+        context.root do |r|
 
-        elsif ruby.respond_to?(:[]=)
-          ruby.send(:[]=, name, convert_to_ruby(vp.read_long))
+          js_object = FFI::MemoryPointer.new(:long)
+          SpiderMonkey.JS_ValueToObject(js_context, id, js_object)
+          r.add(js_object.read_pointer)
 
-        else
-          autovivify(ruby, name, convert_to_ruby(vp.read_long))
-        end        
+          if SpiderMonkey::JSVAL_IS_INT(id)
+            idx = name.to_i
+            if ruby.respond_to?(:[]=)
+              ruby[idx] = convert_to_ruby(vp.read_long) 
+            end
 
-        JS_TRUE
+          elsif ruby.respond_to?(:[]=)
+            ruby.send(:[]=, name, convert_to_ruby(vp.read_long))
+
+          else
+            autovivify(ruby, name, convert_to_ruby(vp.read_long))
+          end        
+
+          JS_TRUE
+        end
+
+      end
+
+      def call_ruby_from_js(target, method, argc, argv, retval)
+
+        args = argv.read_array_of_int(argc).collect do |js_value|
+          convert_to_ruby(js_value)
+        end
+
+        begin
+          ruby_result = send_with_possible_block(target, method, args)
+        rescue Exception => ex
+          report_ruby_error_in_js(ex)
+          JS_FALSE
+        end
+        retval.write_long(convert_to_js(ruby_result).read_long).read_long
+
       end
 
       def call(js_context, obj, argc, argv, retval)
         callee = @js_proxies[SpiderMonkey.JS_ArgvCallee(argv)]
-        # FIXME: We must implement read_array_of_long in ruby-ffi!
-        args = argv.read_array_of_int(argc).collect do |js_value|
-          convert_to_ruby(js_value)
+
+        context.root do |r|
+          r.check { call_ruby_from_js(callee, :call, argc, argv, retval) }
+          JS_TRUE
         end
-        retval.write_long(convert_to_js(send_with_possible_block(callee, :call, args)).read_long)
-        JS_TRUE
+
       end
 
-      def finalize
-
+      # FIXME: not clear what to do here below ...
+      def finalize(js_context, obj)
+        js_value = JS_ObjectToValue(js_context, obj)
+        # @js_proxies.delete(js_value)
+        JS_TRUE
       end
 
       def construct(js_context, obj, argc, argv, retval)
@@ -289,6 +339,11 @@ module Johnson
         JS_TRUE
       end
       
+      def report_ruby_error_in_js(exception)
+        js_value_ptr = convert_to_js(exception)
+        SpiderMonkey.JS_SetPendingException(context, js_value_ptr.read_long)
+      end
+
       def send_with_possible_block(target, symbol, args)
         block = args.pop if args.last.is_a?(RubyLandProxy) && args.last.function?
         target.__send__(symbol, *args, &block)

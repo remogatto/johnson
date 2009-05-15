@@ -1,5 +1,19 @@
 module Johnson
   module SpiderMonkey
+
+    def self.runtimes
+      @runtimes ||= []
+    end
+
+    at_exit do
+
+      runtimes.each do |rt|
+        rt.destroy
+        SpiderMonkey.JS_ShutDown
+      end
+
+    end
+
     class Runtime
 
       CONTEXT_MAP_KEY = :johnson_context_map
@@ -7,6 +21,28 @@ module Johnson
       attr_reader :global, :gc_zeal
 
       include HasPointer, Conversions, JSLandProxy
+
+      class << self
+        def raise_js_exception(jsex)
+
+          raise jsex if Exception === jsex
+          raise Johnson::Error.new(jsex.to_s) unless Johnson::SpiderMonkey::RubyLandProxy === jsex
+
+          stack = jsex.stack rescue nil
+
+          message = jsex['message'] || jsex.to_s
+          at = "(#{jsex['fileName']}):#{jsex['lineNumber']}"
+          ex = Johnson::Error.new("#{message} at #{at}")
+          if stack
+            js_caller = stack.split("\n").find_all { |x| x != '@:0' }
+            ex.set_backtrace(js_caller + caller)
+          else
+            ex.set_backtrace(caller)
+          end
+
+          raise ex
+        end
+      end
 
       def initialize
         @ptr = SpiderMonkey.JS_NewRuntime(0x100000)
@@ -19,7 +55,15 @@ module Johnson
 
         @global = SpiderMonkey.JS_GetGlobalObject(context)
 
+        SpiderMonkey.runtimes << self
         self["Ruby"] = Object
+      end
+
+      def destroy
+        contexts = (Thread.current[CONTEXT_MAP_KEY] ||= {})
+        cx = contexts[self.object_id]
+        SpiderMonkey.JS_DestroyContext(cx)
+        SpiderMonkey.JS_DestroyRuntime(self)
       end
 
       def evaluate(script, filename = nil, linenum = nil)
@@ -87,7 +131,7 @@ module Johnson
 
       def evaluate_compiled_script(js_script)
         js = FFI::MemoryPointer.new(:pointer)
-        ok = JS_ExecuteScript(context, global, js_script, js)
+        ok = SpiderMonkey.JS_ExecuteScript(context, global, js_script, js)
         if ok == JS_TRUE
           convert_to_ruby(js.read_long)
         else
@@ -100,10 +144,22 @@ module Johnson
         linenum  ||= 1
         rval = FFI::MemoryPointer.new(:long)
         ok = SpiderMonkey.JS_EvaluateScript(context, global, script, script.size, filename, linenum, rval)
+
         # FIXME: better exception handling here below
+
         if ok == JS_FALSE
-          raise Error
+
+          if SpiderMonkey.JS_IsExceptionPending(context) == JS_TRUE
+            SpiderMonkey.JS_GetPendingException(context, context.exception);
+            SpiderMonkey.JS_ClearPendingException(context)
+          end
+
+          if context.has_exception?
+            self.class.raise_js_exception(convert_to_ruby(context.exception.read_long))
+          end
+          
         end
+
         convert_to_ruby(rval.read_long)
       end
 

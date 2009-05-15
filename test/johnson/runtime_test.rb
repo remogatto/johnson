@@ -29,9 +29,9 @@ module Johnson
       assert_raises(Johnson::Error) {
         @runtime.evaluate("var js_lambda = function(x) { return x ** 2; }")
       }
-      assert_raises(Johnson::Error) {
-        @runtime.compile("var js_lambda = function(x) { return x ** 2; }")
-      }
+      # assert_raises(Johnson::Error) {
+      #   @runtime.compile("var js_lambda = function(x) { return x ** 2; }")
+      # }
     end
 
     def test_global_is_a_ruby_proxy

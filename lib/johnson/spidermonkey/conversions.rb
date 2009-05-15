@@ -13,31 +13,42 @@ module Johnson
 
     def js_value_is_symbol?(js_value)
       johnson_value = FFI::MemoryPointer.new(:long)
-      SpiderMonkey.JS_GetProperty(context, global, "Johnson", johnson_value)
 
-      if SpiderMonkey.JSVAL_IS_OBJECT(johnson_value.read_long) == SpiderMonkey::JS_FALSE
-        raise "Unable to retrieve Johnson from JSLand"
-      end
+      context.root(:ruby => true) do |r|
 
-      js_object = FFI::MemoryPointer.new(:pointer)
-      SpiderMonkey.JS_ValueToObject(context, johnson_value.read_long, js_object)
+        r.check { SpiderMonkey.JS_GetProperty(context, global, "Johnson", johnson_value) }
 
-      symbol_value = FFI::MemoryPointer.new(:long)
-      
-      SpiderMonkey.JS_GetProperty(context, js_object.read_pointer, "Symbol", symbol_value)
+        r.add(johnson_value)
 
-      if SpiderMonkey.JSVAL_IS_OBJECT(symbol_value.read_long) == SpiderMonkey::JS_FALSE
-        raise "Unable to retrieve Johnson.Symbol from JSLand"
-      end
+        if SpiderMonkey.JSVAL_IS_OBJECT(johnson_value.read_long) == SpiderMonkey::JS_FALSE
+          raise "Unable to retrieve Johnson from JSLand"
+        end
 
-      symbol_object = FFI::MemoryPointer.new(:pointer)
-      SpiderMonkey.JS_ValueToObject(context, symbol_value.read_long, symbol_object)
+        js_object = FFI::MemoryPointer.new(:pointer)
+        SpiderMonkey.JS_ValueToObject(context, johnson_value.read_long, js_object)
 
-      is_a_symbol = FFI::MemoryPointer.new(:int)
-      SpiderMonkey.JS_HasInstance(context, symbol_object.read_pointer, js_value, is_a_symbol)
+        symbol_value = FFI::MemoryPointer.new(:long)
 
-      is_a_symbol.read_int != SpiderMonkey::JS_FALSE
-      
+        r.check { SpiderMonkey.JS_GetProperty(context, js_object.read_pointer, "Symbol", symbol_value) }
+
+        r.add(symbol_value)
+
+        if SpiderMonkey.JSVAL_IS_OBJECT(symbol_value.read_long) == SpiderMonkey::JS_FALSE
+          raise "Unable to retrieve Johnson.Symbol from JSLand"
+        end
+
+        symbol_object = FFI::MemoryPointer.new(:pointer)
+        SpiderMonkey.JS_ValueToObject(context, symbol_value.read_long, symbol_object)
+
+        r.add(symbol_object)
+
+        is_a_symbol = FFI::MemoryPointer.new(:int)
+
+        r.check { SpiderMonkey.JS_HasInstance(context, symbol_object.read_pointer, js_value, is_a_symbol) }
+
+        is_a_symbol.read_int != SpiderMonkey::JS_FALSE
+
+      end      
     end
 
     def convert_symbol_to_js(symbol)
@@ -47,23 +58,37 @@ module Johnson
       property_value = FFI::MemoryPointer.new(:long)
       rvalue = FFI::MemoryPointer.new(:long)
       js_object = FFI::MemoryPointer.new(:pointer)
+      
+      context.root do |r|
 
-      SpiderMonkey.JS_GetProperty(context, global, "Johnson", property_value)
-      SpiderMonkey.JS_ValueToObject(context, property_value.read_long, js_object)
+        r.check { SpiderMonkey.JS_GetProperty(context, global, "Johnson", property_value) }
 
-      SpiderMonkey.JS_CallFunctionName(context, 
-                                       js_object.read_pointer,
-                                       "symbolize", 
-                                       1, 
-                                       FFI::MemoryPointer.new(:long).write_long(name), 
-                                       rvalue)
-      rvalue
+        r.add(property_value)
+
+        r.check { SpiderMonkey.JS_ValueToObject(context, property_value.read_long, js_object) }
+        
+        r.check { SpiderMonkey.JS_CallFunctionName(context, 
+                                                   js_object.read_pointer,
+                                                   "symbolize", 
+                                                   1, 
+                                                   FFI::MemoryPointer.new(:long).write_long(name), 
+                                                   rvalue) }
+        rvalue
+
+      end
     end
 
     def raise_js_error_in_ruby(runtime)
-    end
-
-    def report_ruby_error_in_js(runtime, state, old_errinfo)
+      # ex = FFI::MemoryPointer.new(:long)
+      # if SpiderMonkey.JS_IsExceptionPending(context) == JS_TRUE
+      #   SpiderMonkey.JS_GetPendingException(context, ex)
+      #   # JS_AddNamedRoot(context, &(johnson_context->ex), "raise_js_error_in_ruby");
+      #   SpiderMonkey.JS_ClearPendingException(context);
+      #   # JS_RemoveRoot(context, &(johnson_context->ex));
+      # end
+      # unless ex.null?
+      #   Runtime.raise_js_exception(convert_to_ruby(ex.read_long))
+      # end
     end
 
     def convert_float_or_bignum_to_js(float_or_bignum)

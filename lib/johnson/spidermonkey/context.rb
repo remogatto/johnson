@@ -12,6 +12,18 @@ module Johnson #:nodoc:
         initialize_native
       end
 
+      def root(options = {}, &blk)
+        Root.new(self).root(options = {}, &blk)
+      end
+
+      def has_exception?
+        true if @exception && !@exception.null?
+      end
+
+      def exception
+        @exception ||= FFI::MemoryPointer.new(:long) 
+      end
+
       private
 
       def initialize_native
@@ -21,6 +33,7 @@ module Johnson #:nodoc:
 
         SpiderMonkey.JS_SetErrorReporter(self, method(:report_error).to_proc)
         SpiderMonkey.JS_SetVersion(self, JSVERSION_LATEST)
+        SpiderMonkey.JS_SetOptions(self, JSOPTION_VAROBJFIX | JSOPTION_DONT_REPORT_UNCAUGHT)
       end
 
       def init_context
@@ -86,13 +99,8 @@ module Johnson #:nodoc:
 
       end
 
-      def report_error(context, message, report)
-        ex = FFI::MemoryPointer.new(:long)
-        ok = SpiderMonkey.JS_GetPendingException(context, ex)
-        if ok == JS_TRUE
-          exception = @runtime.convert_to_ruby(ex.read_long)
-          raise Error, exception['message']
-        end
+      def report_error(js_context, message, report)
+        SpiderMonkey.JS_GetPendingException(self, exception)
       end
 
     end
