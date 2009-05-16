@@ -8,7 +8,7 @@ module Johnson
       end
 
       def root(options = {}, &blk)
-        @roots = {}
+        @roots = []
         @root_ruby = true if options[:ruby]
 
         last_evaluated = yield self
@@ -26,6 +26,7 @@ module Johnson
       def add(value, name = "")
         name = sprintf("%s[%d]:%s: %s", __FILE__, __LINE__, __method__, value.inspect) if name.empty?
         check { SpiderMonkey.JS_AddNamedRoot(@context, value, name) }
+        @roots << value
       end
 
       def check(&blk)

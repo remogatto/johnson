@@ -72,20 +72,6 @@ module Johnson
         assert(!@called)
       end
 
-      # def test_root_returns_js_true_if_no_error
-
-      #   def func_that_returns_js_true
-      #     JS_TRUE
-      #   end
-
-      #   retval = @root.root do |r|
-      #     r.check { func_that_returns_js_true }
-      #     "last evaluated expression"
-      #   end
-
-      #   assert_equal(JS_TRUE, retval)
-      # end
-
       def test_root_returns_last_evaluated_expression_if_no_error
 
         def func_that_returns_js_true
@@ -100,15 +86,11 @@ module Johnson
         assert_equal("last evaluated expression", retval)
       end
 
-      def test_add_root
-        value = FFI::MemoryPointer.new(:long)
-        retval = @root.root { |r| r.add(value) }
-        assert_equal(JS_TRUE, retval)
-
-        value = nil
-        retval = @root.root { |r| r.add(value) }
-        assert_equal(JS_FALSE, retval)
-      end
+      # def test_add_root
+      #   value = FFI::MemoryPointer.new(:long)
+      #   retval = @root.root { |r| r.add(value) }
+      #   assert_equal(JS_TRUE, retval)
+      # end
       
     end
 

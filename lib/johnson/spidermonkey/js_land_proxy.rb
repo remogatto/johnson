@@ -325,8 +325,8 @@ module Johnson
 
       # FIXME: not clear what to do here below ...
       def finalize(js_context, obj)
-        js_value = JS_ObjectToValue(js_context, obj)
-        # @js_proxies.delete(js_value)
+        js_value = SpiderMonkey.JS_ObjectToValue(js_context, obj)
+        @js_proxies.delete(js_value)
         JS_TRUE
       end
 
